@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pheninux.xdev.ticketcompare.dto.ProductDTO;
 import pheninux.xdev.ticketcompare.dto.TicketDTO;
+import pheninux.xdev.ticketcompare.util.ProductCategories;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -525,31 +526,7 @@ public class TicketOCRService {
      * Déduit la catégorie basée sur le nom du produit
      */
     private String inferCategory(String productName) {
-        String name = productName.toLowerCase();
-
-        if (name.matches(".*(lait|yaourt|fromage|beurre|crème|crémeux).*")) {
-            return "Laitier";
-        } else if (name.matches(".*(pain|baguette|croissant|viennoiserie).*")) {
-            return "Boulangerie";
-        } else if (name.matches(".*(tomate|carotte|oignon|pomme|banane|orange|citron|fruit|légume|legume|raisin|aubergine|courgette|poivron|salade|laitue|concombre|navet|radis|poireau|chou|brocoli|épinard|epinard|haricot|pois|fraise|framboise|cerise|poire|pêche|peche|abricot|prune|kiwi|mangue|ananas|melon|pastèque|pasteque).*")) {
-            return "Fruits & Légumes";
-        } else if (name.matches(".*(viande|poulet|boeuf|porc|jambon|saucisse|steak|côte|cote|rôti|roti).*")) {
-            return "Viande";
-        } else if (name.matches(".*(poisson|saumon|truite|morue|thon|cabillaud|merlu|sole).*")) {
-            return "Poisson";
-        } else if (name.matches(".*(chocolat|bonbon|sucrerie|confiserie).*")) {
-            return "Confiserie";
-        } else if (name.matches(".*(biscuit|cookie|gâteau|gateau|pâtisserie|patisserie).*")) {
-            return "Biscuiterie";
-        } else if (name.matches(".*(riz|pâte|pate|féculent|feculent|semoule|blé|ble|quinoa).*")) {
-            return "Féculents";
-        } else if (name.matches(".*(huile|sauce|vinaigrette|vinaigre|moutarde|ketchup|mayonnaise).*")) {
-            return "Condiments";
-        } else if (name.matches(".*(café|cafe|thé|the|boisson|jus|eau|soda|limonade).*")) {
-            return "Boissons";
-        }
-
-        return "Autre";
+        return ProductCategories.inferCategory(productName);
     }
 
     /**

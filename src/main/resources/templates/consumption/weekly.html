@@ -276,6 +276,7 @@
                             <div th:id="'collapse-' + ${catStat.index}"
                                  class="accordion-collapse collapse"
                                  th:classappend="${catStat.index == 0} ? 'show' : ''"
+                                 data-bs-parent="#categoryAccordion"
                                  th:aria-labelledby="'heading-' + ${catStat.index}">
                                 <div class="accordion-body p-0">
                                     <div class="table-responsive">
