@@ -1,0 +1,77 @@
+
+# ===================================
+# Configuration alternative avec H2
+# Pour test et développement rapide
+# ===================================
+
+services:
+  # ===================================
+  # Application Spring Boot avec H2 (Fichier persistant)
+  # ===================================
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ticketcompare-app-h2
+    user: "1001:1001"
+    restart: unless-stopped
+    environment:
+      # Spring Configuration
+      SPRING_PROFILES_ACTIVE: default
+      SERVER_PORT: 8080
+
+      # H2 Database Configuration
+      # MODE PERSISTANT: Les données sont sauvegardées dans un fichier
+      # Pour revenir en mode mémoire: jdbc:h2:mem:ticketcomparedb
+      H2_DB_URL: ${H2_DB_URL:-jdbc:h2:file:/app/data/ticketcomparedb;DB_CLOSE_ON_EXIT=FALSE}
+      H2_DB_USERNAME: ${H2_DB_USERNAME:-sa}
+      H2_DB_PASSWORD: ${H2_DB_PASSWORD:-}
+
+      # JPA Configuration
+      # update = conserve les données, create = recrée à chaque démarrage
+      JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+
+      # H2 Console Configuration
+      SPRING_H2_CONSOLE_ENABLED: "true"
+      SPRING_H2_CONSOLE_PATH: /h2-console
+      SPRING_H2_CONSOLE_SETTINGS_WEB-ALLOW-OTHERS: "true"
+
+      # JVM Options
+      JAVA_OPTS: ${JAVA_OPTS:--Xmx512m -Xms256m}
+
+      # Tesseract OCR Configuration
+      TESSDATA_PREFIX: /usr/share/tessdata
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+
+      # Timezone
+      TZ: Europe/Paris
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - h2_data:/app/data          # ← NOUVEAU: Persistance de la base H2
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# ===================================
+# Volumes persistants
+# ===================================
+volumes:
+  h2_data:
+    driver: local
+    name: ticketcompare_h2_data
+
+  app_uploads:
+    driver: local
+    name: ticketcompare_h2_uploads
+
+  app_logs:
+    driver: local
+    name: ticketcompare_h2_logs
+

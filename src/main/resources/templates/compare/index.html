@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparaison des Prix - ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Styles spécifiques à la comparaison */
+        .store-badge {
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 5px;
+        }
+        .best-price {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            font-weight: bold;
+        }
+        .price-card {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .price-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .savings-banner {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .evolution-chart {
+            height: 300px;
+        }
+        .store-winner {
+            background: #ffd700;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/compare">Comparaison</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- En-tête -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h2><i class="fas fa-balance-scale text-primary"></i> Comparaison des Prix par Magasin</h2>
+                <p class="text-muted">Trouvez les meilleurs prix pour vos produits réguliers</p>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#howItWorksModal">
+                    <i class="fas fa-info-circle"></i> Comment ça fonctionne ?
+                </button>
+            </div>
+            <div class="col-md-3 text-end">
+                <a href="/compare/global" class="btn btn-success">
+                    <i class="fas fa-th-list"></i> Vue Globale
+                </a>
+            </div>
+        </div>
+
+        <!-- Onglets -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#search">
+                    <i class="fas fa-search"></i> Rechercher un Produit
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#regularProducts">
+                    <i class="fas fa-star"></i> Produits Réguliers
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#priceDrops">
+                    <i class="fas fa-arrow-down"></i> Baisses de Prix
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Onglet Recherche -->
+            <div class="tab-pane fade show active" id="search">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-search"></i> Rechercher et Comparer</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchForm">
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <input type="text"
+                                           class="form-control form-control-lg"
+                                           id="productSearch"
+                                           placeholder="Ex: Lait, Pain, Banane..."
+                                           list="productSuggestions">
+                                    <datalist id="productSuggestions"></datalist>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-search"></i> Comparer
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Zone de chargement -->
+                <div id="loadingSpinner" class="text-center my-5" style="display:none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Recherche...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Comparaison des prix en cours...</p>
+                </div>
+
+                <!-- Résultats de comparaison -->
+                <div id="comparisonResults" style="display:none;">
+                    <!-- Économies potentielles -->
+                    <div id="savingsBanner" class="savings-banner text-center" style="display:none;">
+                        <h4><i class="fas fa-piggy-bank"></i> Économie Potentielle</h4>
+                        <h2 id="savingsAmount">€0.00</h2>
+                        <p class="mb-0">en achetant chez <strong id="bestStoreName">-</strong></p>
+                    </div>
+
+                    <!-- Tableau de comparaison -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-shopping-cart"></i>
+                                Prix du produit : <strong id="productNameDisplay">-</strong>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row" id="storeComparison">
+                                <!-- Cartes magasins générées dynamiquement -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Évolution des prix -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-chart-line"></i> Évolution des Prix</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="evolutionChart" class="evolution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message initial -->
+                <div id="initialMessage" class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-search-dollar fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Recherchez un produit pour comparer les prix</h5>
+                        <p class="text-muted">Découvrez où acheter vos produits au meilleur prix</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Produits Réguliers -->
+            <div class="tab-pane fade" id="regularProducts">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-star"></i> Vos Produits Réguliers Multi-Magasins</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Produits que vous achetez dans plusieurs magasins</p>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="regularProductsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-box"></i> Produit</th>
+                                        <th><i class="fas fa-tag"></i> Catégorie</th>
+                                        <th class="text-center"><i class="fas fa-store"></i> Magasins</th>
+                                        <th class="text-center"><i class="fas fa-shopping-basket"></i> Achats Total</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Rempli dynamiquement -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Baisses de Prix -->
+            <div class="tab-pane fade" id="priceDrops">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-arrow-down"></i> Baisses de Prix Significatives</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Produits avec une baisse de prix >10% cette semaine</p>
+                        <div id="priceDropsList">
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                <p>Chargement...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        let evolutionChart = null;
+
+        // Charger les produits réguliers au chargement
+        window.addEventListener('DOMContentLoaded', () => {
+            loadRegularProducts();
+            loadPriceDrops();
+        });
+
+        // Recherche de produit
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const product = document.getElementById('productSearch').value;
+            if (!product) return;
+
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('comparisonResults').style.display = 'none';
+            document.getElementById('initialMessage').style.display = 'none';
+
+            try {
+                const response = await fetch(`/compare/api/product?product=${encodeURIComponent(product)}`);
+                const data = await response.json();
+                displayComparison(data);
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la comparaison');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        });
+
+        function displayComparison(data) {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            document.getElementById('comparisonResults').style.display = 'block';
+            document.getElementById('productNameDisplay').textContent = data.productName;
+
+            // Afficher les économies
+            if (data.potentialSavings) {
+                document.getElementById('savingsBanner').style.display = 'block';
+                document.getElementById('savingsAmount').textContent = '€' + data.potentialSavings.toFixed(2);
+                document.getElementById('bestStoreName').textContent = data.bestStore;
+            }
+
+            // Afficher les cartes magasins
+            const container = document.getElementById('storeComparison');
+            container.innerHTML = '';
+
+            data.storeComparison.forEach((store, index) => {
+                const isBest = index === 0;
+                const col = document.createElement('div');
+                col.className = 'col-md-4 mb-3';
+                col.innerHTML = `
+                    <div class="card price-card h-100 ${isBest ? 'border-success' : ''}" onclick="showEvolution('${data.productName}', '${store.store}')">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-store"></i> ${store.store}
+                                ${isBest ? '<span class="badge bg-success ms-2">Meilleur Prix</span>' : ''}
+                            </h5>
+                            <h3 class="text-primary">€${store.avgPrice.toFixed(2)}</h3>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Min: €${store.minPrice.toFixed(2)}</small>
+                                <small class="text-muted">Max: €${store.maxPrice.toFixed(2)}</small>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-shopping-cart"></i> ${store.purchaseCount} achat(s)
+                                </small>
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> ${new Date(store.lastPurchase).toLocaleDateString('fr-FR')}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+
+            // Créer le graphique d'évolution
+            createEvolutionChart(data);
+        }
+
+        async function showEvolution(product, store) {
+            try {
+                const response = await fetch(`/compare/api/evolution?product=${encodeURIComponent(product)}&store=${encodeURIComponent(store)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Mettre à jour le graphique avec les données du magasin
+                updateEvolutionChart(data);
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function createEvolutionChart(data) {
+            const ctx = document.getElementById('evolutionChart');
+
+            if (evolutionChart) {
+                evolutionChart.destroy();
+            }
+
+            // Créer des datasets pour chaque magasin
+            const datasets = data.storeComparison.map((store, index) => {
+                const colors = ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#0dcaf0'];
+                return {
+                    label: store.store,
+                    data: [store.avgPrice],
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '20',
+                    tension: 0.4
+                };
+            });
+
+            evolutionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.storeComparison.map(s => s.store),
+                    datasets: [{
+                        label: 'Prix Moyen (€)',
+                        data: data.storeComparison.map(s => s.avgPrice),
+                        backgroundColor: data.storeComparison.map((s, i) =>
+                            i === 0 ? '#198754' : '#0d6efd'
+                        ),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => '€' + context.parsed.y.toFixed(2)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: (value) => '€' + value.toFixed(2)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateEvolutionChart(data) {
+            // Implémenter la mise à jour avec timeline détaillée
+            console.log('Evolution data:', data);
+        }
+
+        async function loadRegularProducts() {
+            try {
+                const response = await fetch('/compare/api/products');
+                const products = await response.json();
+
+                const tbody = document.querySelector('#regularProductsTable tbody');
+                tbody.innerHTML = '';
+
+                if (products.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Aucun produit acheté dans plusieurs magasins</td></tr>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${product.name}</strong></td>
+                        <td><span class="badge bg-secondary">${product.category || 'Autre'}</span></td>
+                        <td class="text-center">
+                            <span class="badge bg-info">${product.storeCount} magasins</span>
+                        </td>
+                        <td class="text-center">${product.totalPurchases}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-primary" onclick="searchProduct('${product.name}')">
+                                <i class="fas fa-search"></i> Comparer
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function loadPriceDrops() {
+            try {
+                const response = await fetch('/compare/api/price-drops');
+                const drops = await response.json();
+
+                const container = document.getElementById('priceDropsList');
+
+                if (drops.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>Aucune baisse significative détectée cette semaine</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                drops.forEach(drop => {
+                    const card = document.createElement('div');
+                    card.className = 'card mb-3 border-success';
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-box"></i> ${drop.productName}
+                                    </h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-store"></i> ${drop.store}
+                                    </small>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <small class="text-muted">Avant</small>
+                                    <h4 class="text-danger">€${drop.oldPrice.toFixed(2)}</h4>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <i class="fas fa-arrow-right fa-2x text-success"></i>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <small class="text-muted">Maintenant</small>
+                                    <h4 class="text-success">€${drop.newPrice.toFixed(2)}</h4>
+                                    <span class="badge bg-success">-${drop.percentDrop.toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function searchProduct(name) {
+            document.getElementById('productSearch').value = name;
+            document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+            // Retourner au premier onglet
+            document.querySelector('[data-bs-target="#search"]').click();
+        }
+    </script>
+
+    <!-- Modal Comment ça fonctionne -->
+    <div class="modal fade" id="howItWorksModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-lightbulb"></i> Comment fonctionne la Comparaison de Prix ?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-primary"><i class="fas fa-store"></i> Méthode : Analyse Multi-Magasins</h6>
+                    <p>Le système compare les prix d'un même produit dans différents magasins pour identifier où acheter au meilleur prix.</p>
+
+                    <h6 class="text-success mt-3"><i class="fas fa-search-dollar"></i> Comparaisons Disponibles</h6>
+                    <ul>
+                        <li><strong>Par Produit :</strong> Recherchez un produit et voyez tous ses prix par magasin</li>
+                        <li><strong>Meilleur Prix :</strong> Badge vert indiquant le magasin le moins cher</li>
+                        <li><strong>Économies Potentielles :</strong> Différence entre le prix le plus cher et le moins cher</li>
+                        <li><strong>Historique des Prix :</strong> Évolution dans le temps avec dates d'achat</li>
+                    </ul>
+
+                    <h6 class="text-warning mt-3"><i class="fas fa-chart-line"></i> Détection Automatique</h6>
+                    <ul>
+                        <li>Le système détecte automatiquement les produits identiques entre magasins</li>
+                        <li>Les variations mineures de nom sont regroupées (ex: "Lait 1L" = "Lait 1 litre")</li>
+                        <li>Le calcul du meilleur prix est mis à jour en temps réel</li>
+                    </ul>
+
+                    <h6 class="text-danger mt-3"><i class="fas fa-exclamation-triangle"></i> Limitations</h6>
+                    <ul class="mb-0">
+                        <li>Seuls les produits achetés dans plusieurs magasins sont comparables</li>
+                        <li>Les promotions temporaires faussent la comparaison moyenne</li>
+                        <li>Les différences de qualité/marque ne sont pas prises en compte</li>
+                        <li>Plus vous avez d'achats, plus la comparaison est précise</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prédiction de Consommation | ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .prediction-card {
+            transition: transform 0.2s;
+        }
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .frequency-indicator {
+            font-size: 3rem;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/tickets">Tickets</a>
+                <a class="nav-link" href="/statistics/dashboard">Statistiques</a>
+                <a class="nav-link" href="/consumption/weekly">Consommation</a>
+                <a class="nav-link" href="/analysis/forecast">Prédiction Prix</a>
+                <a class="nav-link active" href="/analysis/consumption-forecast">Prédiction Consommation</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- En-tête -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h2><i class="fas fa-shopping-cart text-success"></i> Prédiction de Consommation</h2>
+                <p class="text-muted">Prédisez quand vous aurez besoin de racheter un produit</p>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#howItWorksModal">
+                    <i class="fas fa-info-circle"></i> Comment ça fonctionne ?
+                </button>
+            </div>
+            <div class="col-md-3 text-end">
+                <a href="/analysis/forecast" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-line"></i> Prédiction Prix
+                </a>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-search"></i> Analyser un Produit</h5>
+            </div>
+            <div class="card-body">
+                <form id="consumptionForm">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Nom du produit *</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="productInput"
+                                   name="product"
+                                   placeholder="Ex: Lait, Pain, Banane..."
+                                   required>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-calculator"></i> Analyser
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chargement -->
+        <div id="loadingSpinner" class="text-center my-5" style="display:none;">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Analyse en cours...</span>
+            </div>
+            <p class="mt-3 text-muted">Analyse de votre historique d'achats...</p>
+        </div>
+
+        <!-- Résultats -->
+        <div id="consumptionResult" style="display:none;">
+            <!-- Cartes de résumé -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm prediction-card">
+                        <div class="card-body">
+                            <h6 class="text-muted">Fréquence d'Achat</h6>
+                            <h3 class="text-primary mb-0">
+                                <span id="frequencyValue">-</span>
+                                <small class="fs-6">jours</small>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm prediction-card">
+                        <div class="card-body">
+                            <h6 class="text-muted">Total Achats</h6>
+                            <h3 class="text-info mb-0" id="totalPurchases">-</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm prediction-card">
+                        <div class="card-body">
+                            <h6 class="text-muted">Prochain Achat</h6>
+                            <h3 class="text-success mb-0" id="nextPurchaseDate">-</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm prediction-card">
+                        <div class="card-body">
+                            <h6 class="text-muted">Fiabilité</h6>
+                            <h3 class="mb-0" id="confidence">-</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Détails -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-box"></i>
+                        Analyse pour : <strong id="productName">-</strong>
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar-check fa-2x text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-0">Premier Achat</h6>
+                                    <p class="text-muted mb-0" id="firstPurchase">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar fa-2x text-info me-3"></i>
+                                <div>
+                                    <h6 class="mb-0">Dernier Achat</h6>
+                                    <p class="text-muted mb-0" id="lastPurchase">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Analyse</h6>
+                        <p id="analysisMessage" class="mb-0">-</p>
+                    </div>
+
+                    <div class="alert alert-success" role="alert">
+                        <h6 class="alert-heading"><i class="fas fa-lightbulb"></i> Recommandation</h6>
+                        <p id="recommendation" class="mb-0">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Prédiction dans le Temps</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-calendar-week fa-2x text-primary mb-2"></i>
+                                <h6>Dans 7 jours</h6>
+                                <p class="text-muted mb-0" id="prediction7">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-calendar-alt fa-2x text-info mb-2"></i>
+                                <h6>Dans 30 jours</h6>
+                                <p class="text-muted mb-0" id="prediction30">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-calendar fa-2x text-success mb-2"></i>
+                                <h6>Dans 90 jours</h6>
+                                <p class="text-muted mb-0" id="prediction90">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message initial -->
+        <div id="initialMessage" class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-shopping-basket fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Entrez un nom de produit pour analyser votre consommation</h5>
+                <p class="text-muted">Le système analysera votre historique pour prédire vos besoins futurs</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('consumptionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const product = document.getElementById('productInput').value;
+
+            // Afficher le spinner
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('consumptionResult').style.display = 'none';
+            document.getElementById('initialMessage').style.display = 'none';
+
+            try {
+                const response = await fetch(`/analysis/api/consumption-forecast?product=${encodeURIComponent(product)}`);
+                const data = await response.json();
+
+                displayConsumption(data);
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la récupération des données');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        });
+
+        function displayConsumption(data) {
+            document.getElementById('consumptionResult').style.display = 'block';
+
+            // Remplir les cartes
+            document.getElementById('frequencyValue').textContent = data.averageFrequencyDays || '-';
+            document.getElementById('totalPurchases').textContent = data.totalPurchases || 0;
+            document.getElementById('productName').textContent = data.productName;
+
+            // Date du prochain achat
+            const nextPurchase = document.getElementById('nextPurchaseDate');
+            if (data.nextPurchaseDate) {
+                const date = new Date(data.nextPurchaseDate);
+                nextPurchase.textContent = date.toLocaleDateString('fr-FR');
+                nextPurchase.className = 'text-success mb-0';
+            } else {
+                nextPurchase.textContent = 'Inconnu';
+                nextPurchase.className = 'text-muted mb-0';
+            }
+
+            // Confiance
+            const confidence = document.getElementById('confidence');
+            confidence.textContent = data.confidence || 'LOW';
+            if (data.confidence === 'HIGH') confidence.className = 'text-success mb-0';
+            else if (data.confidence === 'MEDIUM') confidence.className = 'text-warning mb-0';
+            else confidence.className = 'text-danger mb-0';
+
+            // Dates
+            if (data.firstPurchase) {
+                const first = new Date(data.firstPurchase);
+                document.getElementById('firstPurchase').textContent = first.toLocaleDateString('fr-FR');
+            }
+            if (data.lastPurchase) {
+                const last = new Date(data.lastPurchase);
+                document.getElementById('lastPurchase').textContent = last.toLocaleDateString('fr-FR');
+            }
+
+            // Message d'analyse
+            const analysisMessage = document.getElementById('analysisMessage');
+            if (data.averageFrequencyDays) {
+                analysisMessage.innerHTML = `Vous achetez ce produit en moyenne tous les <strong>${data.averageFrequencyDays} jours</strong>. ` +
+                    `Vous l'avez acheté <strong>${data.totalPurchases} fois</strong> depuis votre premier achat.`;
+            } else {
+                analysisMessage.textContent = 'Pas assez de données pour analyser la fréquence.';
+            }
+
+            // Recommandation
+            const recommendation = document.getElementById('recommendation');
+            const today = new Date();
+            const nextDate = data.nextPurchaseDate ? new Date(data.nextPurchaseDate) : null;
+
+            if (nextDate) {
+                const daysUntil = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+
+                if (daysUntil < 0) {
+                    recommendation.innerHTML = `<i class="fas fa-exclamation-triangle text-warning"></i> ` +
+                        `Vous devriez <strong>racheter ce produit maintenant</strong> ! La date prévue était il y a ${Math.abs(daysUntil)} jours.`;
+                } else if (daysUntil <= 3) {
+                    recommendation.innerHTML = `<i class="fas fa-bell text-warning"></i> ` +
+                        `Vous devriez racheter ce produit <strong>très bientôt</strong> (dans ${daysUntil} jour${daysUntil > 1 ? 's' : ''}).`;
+                } else if (daysUntil <= 7) {
+                    recommendation.innerHTML = `<i class="fas fa-clock text-info"></i> ` +
+                        `Vous devriez racheter ce produit <strong>dans environ ${daysUntil} jours</strong>.`;
+                } else {
+                    recommendation.innerHTML = `<i class="fas fa-check-circle text-success"></i> ` +
+                        `Vous avez encore du temps avant de racheter ce produit (${daysUntil} jours).`;
+                }
+            } else {
+                recommendation.innerHTML = `<i class="fas fa-info-circle"></i> Pas assez de données pour faire une recommandation.`;
+            }
+
+            // Prédictions dans le temps
+            if (data.averageFrequencyDays > 0) {
+                const freq = data.averageFrequencyDays;
+                document.getElementById('prediction7').textContent = `~${Math.ceil(7 / freq)} achat${Math.ceil(7 / freq) > 1 ? 's' : ''}`;
+                document.getElementById('prediction30').textContent = `~${Math.ceil(30 / freq)} achat${Math.ceil(30 / freq) > 1 ? 's' : ''}`;
+                document.getElementById('prediction90').textContent = `~${Math.ceil(90 / freq)} achat${Math.ceil(90 / freq) > 1 ? 's' : ''}`;
+            } else {
+                document.getElementById('prediction7').textContent = 'Insuffisant';
+                document.getElementById('prediction30').textContent = 'Insuffisant';
+                document.getElementById('prediction90').textContent = 'Insuffisant';
+            }
+        }
+    </script>
+
+    <!-- Modal Comment ça fonctionne -->
+    <div class="modal fade" id="howItWorksModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-lightbulb"></i> Comment fonctionne la Prédiction de Consommation ?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-primary"><i class="fas fa-calendar-alt"></i> Méthode : Calcul de Fréquence d'Achat</h6>
+                    <p>Le système analyse la fréquence à laquelle vous achetez un produit pour prédire quand vous devrez le racheter.</p>
+
+                    <h6 class="text-success mt-3"><i class="fas fa-clock"></i> Calculs Effectués</h6>
+                    <ul>
+                        <li><strong>Fréquence Moyenne :</strong> Intervalle moyen en jours entre deux achats</li>
+                        <li><strong>Dernier Achat :</strong> Date du dernier achat enregistré</li>
+                        <li><strong>Prochain Achat Estimé :</strong> Dernier achat + fréquence moyenne</li>
+                        <li><strong>Quantité Habituelle :</strong> Quantité moyenne achetée à chaque fois</li>
+                    </ul>
+
+                    <h6 class="text-warning mt-3"><i class="fas fa-sync-alt"></i> Fiabilité</h6>
+                    <ul>
+                        <li>Plus vous avez d'achats d'un produit, plus la prédiction est précise</li>
+                        <li>Les produits achetés régulièrement (ex: lait) sont plus prévisibles</li>
+                        <li>Les produits occasionnels sont difficiles à prédire</li>
+                    </ul>
+
+                    <h6 class="text-danger mt-3"><i class="fas fa-exclamation-triangle"></i> Limitations</h6>
+                    <ul class="mb-0">
+                        <li>Minimum 2 achats nécessaires pour calculer une fréquence</li>
+                        <li>Ne tient pas compte des variations saisonnières</li>
+                        <li>Les changements d'habitudes récents ne sont pas détectés</li>
+                        <li>Basé uniquement sur vos tickets enregistrés</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,96 @@
+# ===================================
+# Configuration TicketCompare - PRODUCTION
+# Profil: prod (avec PostgreSQL)
+# ===================================
+
+spring:
+  # ===================================
+  # Base de données PostgreSQL
+  # ===================================
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ticketcompare}
+    username: ${SPRING_DATASOURCE_USERNAME:ticketuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:TicketPass2024!}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  # ===================================
+  # JPA / Hibernate
+  # ===================================
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  sql:
+    init:
+      mode: never
+
+  # ===================================
+  # Thymeleaf (Production)
+  # ===================================
+  thymeleaf:
+    cache: true
+
+  # ===================================
+  # Upload de fichiers
+  # ===================================
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:10MB}
+      max-request-size: ${MAX_REQUEST_SIZE:10MB}
+
+# ===================================
+# Actuator (Health checks)
+# ===================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# ===================================
+# Tesseract OCR
+# ===================================
+tesseract:
+  ocr:
+    language: fra+eng
+    datapath: ${TESSERACT_DATAPATH:/usr/share/tessdata}
+
+# ===================================
+# Logging (Production)
+# ===================================
+logging:
+  level:
+    root: WARN
+    pheninux.xdev.ticketcompare: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
+  file:
+    name: /app/logs/ticketcompare.log
+    max-size: 10MB
+    max-history: 30
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+

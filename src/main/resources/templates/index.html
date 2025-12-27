@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketCompare - Accueil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/compare">Comparaison</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Prédictions
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/analysis/forecast">📈 Prix</a></li>
+                            <li><a class="dropdown-item" href="/analysis/consumption-forecast">🛒 Consommation</a></li>
+                            <li><a class="dropdown-item" href="/analysis/smart-shopping-list">🎯 Liste Intelligente</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="jumbotron">
+            <h1 class="display-4">🧠 Bienvenue sur ReceiptIQ</h1>
+            <p class="lead">Smart Receipt Intelligence - Analysez vos tickets intelligemment, comparez les prix et optimisez vos dépenses</p>
+            <hr class="my-4">
+            <p>Commencez par créer votre premier ticket ou explorez les statistiques intelligentes</p>
+            <a class="btn btn-primary btn-lg me-2" href="/tickets/create" role="button">
+                <i class="fas fa-plus"></i> Nouveau Ticket
+            </a>
+            <a class="btn btn-success btn-lg" href="/tickets" role="button">
+                <i class="fas fa-list"></i> Voir mes Tickets
+            </a>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-receipt fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Tickets</h5>
+                        <p class="card-text">Gérez vos tickets de caisse par date ou magasin</p>
+                        <a href="/tickets" class="btn btn-outline-primary">Accéder</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-bar fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Statistiques</h5>
+                        <p class="card-text">Analysez les prix et trouvez les meilleures offres</p>
+                        <a href="/statistics/dashboard" class="btn btn-outline-success">Analyser</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shopping-basket fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Consommation</h5>
+                        <p class="card-text">Suivez votre consommation hebdomadaire de produits</p>
+                        <a href="/consumption/weekly" class="btn btn-outline-warning">Consulter</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-balance-scale fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Comparaison</h5>
+                        <p class="card-text">Comparez les prix entre différents magasins</p>
+                        <a href="/compare" class="btn btn-outline-info">Comparer</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-primary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Prédiction des Prix</h5>
+                        <p class="card-text">Anticipez l'évolution des prix avec l'analyse de tendances</p>
+                        <a href="/analysis/forecast" class="btn btn-primary">Prédire</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-success">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shopping-cart fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Prédiction Consommation</h5>
+                        <p class="card-text">Prédisez quand racheter vos produits selon vos habitudes</p>
+                        <a href="/analysis/consumption-forecast" class="btn btn-success">Analyser</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-info">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list-check fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Liste Intelligente</h5>
+                        <p class="card-text">Génère une liste de courses basée sur vos besoins nutritionnels</p>
+                        <a href="/analysis/smart-shopping-list" class="btn btn-info">Générer</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h3><i class="fas fa-rocket"></i> Commencer</h3>
+                        <ol class="mb-0">
+                            <li>Créez votre premier ticket en cliquant sur <a href="/tickets/create" class="fw-bold">"Nouveau Ticket"</a></li>
+                            <li>Ajoutez les produits de votre ticket avec leurs prix</li>
+                            <li>Consultez les statistiques pour analyser vos dépenses</li>
+                            <li>Comparez les prix entre différents magasins</li>
+                            <li>Suivez votre consommation hebdomadaire</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

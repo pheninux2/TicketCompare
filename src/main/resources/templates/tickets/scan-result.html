@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultat du Scan - ReceiptIQ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .success-icon {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .product-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 15px;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .category-badge.laitier {
+            background-color: #e7f4ff;
+            color: #0056b3;
+        }
+
+        .category-badge.viande {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .category-badge.fruits {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .price-highlight {
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stats-card .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .stats-card .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .total-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .total-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .button-group {
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <!-- Success Header -->
+    <div class="text-center mb-4">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1>Ticket Analysé avec Succès!</h1>
+        <p class="text-muted">Les produits ont été extraits automatiquement de votre image</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stat-number" th:text="${productsCount}">0</div>
+                <div class="stat-label">Produits Détectés</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stat-number" th:text="'€' + ${#numbers.formatDecimal(ticket.totalAmount, 1, 2)}">0.00</div>
+                <div class="stat-label">Montant Total</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stat-number" th:text="${#temporals.format(ticket.date, 'dd/MM/yyyy')}">--/--/----</div>
+                <div class="stat-label">Date du Scan</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Information -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-receipt"></i> Informations du Ticket</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Date:</strong> <span th:text="${#temporals.format(ticket.date, 'dd MMMM yyyy')}">--</span></p>
+                    <p><strong>Magasin:</strong> <span th:text="${ticket.store != null ? ticket.store : 'Non spécifié'}" class="badge bg-info">Non spécifié</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Montant Total:</strong> <span class="price-highlight" th:text="'€' + ${#numbers.formatDecimal(ticket.totalAmount, 1, 2)}">0.00</span></p>
+                    <p><strong>Nombre de Produits:</strong> <span class="badge bg-success" th:text="${productsCount}">0</span></p>
+                </div>
+            </div>
+            <div th:if="${ticket.notes != null and ticket.notes != ''}">
+                <p><strong>Notes:</strong> <span th:text="${ticket.notes}" class="text-muted">--</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products List -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Produits Détectés</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(ticket.products)}" class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> Aucun produit n'a pu être extrait de l'image.
+                Vous pouvez les ajouter manuellement en éditant le ticket.
+            </div>
+
+            <div th:each="product : ${ticket.products}" class="card product-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="card-title mb-2" th:text="${product.name}">Nom du produit</h6>
+                            <div>
+                                <span th:if="${product.category != null}" class="category-badge" th:classappend="${product.category.toLowerCase().replaceAll(' ', '-')}" th:text="${product.category}">Catégorie</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row text-end">
+                                <div class="col-4">
+                                    <small class="text-muted">Prix Unitaire</small>
+                                    <p th:text="'€' + ${#numbers.formatDecimal(product.price, 1, 2)}">0.00</p>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Quantité</small>
+                                    <p th:text="${product.quantity} + ' ' + (product.unit != null ? product.unit : 'u')">1 u</p>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Total</small>
+                                    <p class="price-highlight" th:text="'€' + ${#numbers.formatDecimal(product.totalPrice, 1, 2)}">0.00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Section -->
+    <div class="total-section">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4>Montant à Payer:</h4>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="total-amount" th:text="'€' + ${#numbers.formatDecimal(ticket.totalAmount, 1, 2)}">0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-center button-group flex-wrap">
+        <a th:href="@{/tickets}" class="btn btn-primary btn-lg">
+            <i class="fas fa-list"></i> Voir Tous les Tickets
+        </a>
+        <a th:if="${ticket.id != null}" th:href="@{/tickets/{id}(id=${ticket.id})}" class="btn btn-info btn-lg">
+            <i class="fas fa-eye"></i> Détails du Ticket
+        </a>
+        <a th:if="${ticket.id != null}" th:href="@{/tickets/{id}/edit(id=${ticket.id})}" class="btn btn-warning btn-lg">
+            <i class="fas fa-edit"></i> Éditer
+        </a>
+        <a th:href="@{/tickets/scan}" class="btn btn-success btn-lg">
+            <i class="fas fa-plus"></i> Scanner un Autre Ticket
+        </a>
+    </div>
+
+    <!-- Info Alert -->
+    <div class="alert alert-info mt-4" role="alert">
+        <i class="fas fa-info-circle"></i>
+        <strong>Conseil:</strong> L'OCR peut ne pas extraire tous les produits avec 100% de précision.
+        Nous vous recommandons de vérifier et d'éditer le ticket si nécessaire.
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prédictions de Prix | ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .prediction-card {
+            border-left: 4px solid #0d6efd;
+            transition: transform 0.2s;
+        }
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .trend-up {
+            color: #dc3545;
+            border-left-color: #dc3545 !important;
+        }
+        .trend-down {
+            color: #198754;
+            border-left-color: #198754 !important;
+        }
+        .confidence-high { background-color: #d1e7dd; }
+        .confidence-medium { background-color: #fff3cd; }
+        .confidence-low { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/tickets">Tickets</a>
+                <a class="nav-link" href="/statistics/dashboard">Statistiques</a>
+                <a class="nav-link" href="/consumption/weekly">Consommation</a>
+                <a class="nav-link active" href="/analysis/forecast">Prédictions</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- En-tête -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h2><i class="fas fa-chart-line text-primary"></i> Prédictions d'Évolution des Prix</h2>
+                <p class="text-muted">Analyse prédictive basée sur l'historique des prix (régression linéaire)</p>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#howItWorksModal">
+                    <i class="fas fa-info-circle"></i> Comment ça fonctionne ?
+                </button>
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn btn-success" onclick="window.location.href='/analysis/consumption-forecast'">
+                    <i class="fas fa-shopping-cart"></i> Prédiction Consommation
+                </button>
+            </div>
+        </div>
+
+        <!-- Formulaire de prédiction -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-search"></i> Rechercher un Produit</h5>
+            </div>
+            <div class="card-body">
+                <form id="forecastForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nom du produit *</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="productInput"
+                                   name="product"
+                                   placeholder="Ex: Citron, Banane, Lait..."
+                                   list="productSuggestions"
+                                   required>
+                            <datalist id="productSuggestions"></datalist>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Prédiction à</label>
+                            <select class="form-select" name="days" id="daysSelect">
+                                <option value="7">7 jours (1 semaine)</option>
+                                <option value="14">14 jours (2 semaines)</option>
+                                <option value="30" selected>30 jours (1 mois)</option>
+                                <option value="60">60 jours (2 mois)</option>
+                                <option value="90">90 jours (3 mois)</option>
+                                <option value="180">180 jours (6 mois)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-magic"></i> Prédire
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Zone de chargement -->
+        <div id="loadingSpinner" class="text-center my-5" style="display:none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Calcul en cours...</span>
+            </div>
+            <p class="mt-3 text-muted">Analyse des données historiques...</p>
+        </div>
+
+        <!-- Résultat de la prédiction -->
+        <div id="forecastResult" style="display:none;">
+            <!-- Carte de résumé -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Prix Actuel</h6>
+                            <h3 id="currentPrice" class="text-primary mb-0">-</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Prix Prédit</h6>
+                            <h3 id="predictedPrice" class="text-success mb-0">-</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Variation</h6>
+                            <h3 id="percentChange" class="mb-0">-</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Confiance</h6>
+                            <h3 id="confidence" class="mb-0">-</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Détails de la prédiction -->
+            <div class="card prediction-card shadow-sm mb-4" id="predictionCard">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-chart-line"></i>
+                        Analyse pour : <strong id="productName">-</strong>
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="alert" id="trendAlert" role="alert">
+                                <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Tendance</h6>
+                                <p id="trendMessage" class="mb-0">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert" id="confidenceAlert" role="alert">
+                                <h6 class="alert-heading"><i class="fas fa-check-circle"></i> Fiabilité</h6>
+                                <p id="confidenceMessage" class="mb-0">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6><i class="fas fa-lightbulb"></i> Recommandation</h6>
+                        <p id="recommendation" class="text-muted mb-0">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphique de prédiction -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-chart-area"></i> Évolution et Prédiction</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 400px; position: relative;">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message initial -->
+        <div id="initialMessage" class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Entrez un nom de produit pour voir les prédictions</h5>
+                <p class="text-muted">Le système analysera l'historique des prix pour prédire l'évolution future</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'aide -->
+    <div class="modal fade" id="helpModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-question-circle"></i> Comment fonctionnent les prédictions ?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6><i class="fas fa-chart-line"></i> Méthode : Régression Linéaire</h6>
+                    <p>Le système analyse l'historique des prix de vos tickets pour détecter une tendance et extrapoler le prix futur.</p>
+
+                    <h6 class="mt-3"><i class="fas fa-shield-alt"></i> Niveaux de Confiance</h6>
+                    <ul>
+                        <li><strong class="text-success">HIGH</strong> : Plus de 5 observations et R² > 0.8 (très fiable)</li>
+                        <li><strong class="text-warning">MEDIUM</strong> : Plus de 5 observations et R² > 0.5 (fiable)</li>
+                        <li><strong class="text-danger">LOW</strong> : Moins de 5 observations ou R² < 0.5 (peu fiable)</li>
+                    </ul>
+
+                    <h6 class="mt-3"><i class="fas fa-exclamation-triangle"></i> Limitations</h6>
+                    <ul>
+                        <li>Les prédictions sont basées sur les tendances passées</li>
+                        <li>Les événements exceptionnels (promotions, pénuries) ne sont pas pris en compte</li>
+                        <li>Plus vous avez de données, plus la prédiction est fiable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        let predictionChart = null;
+
+        // Soumettre le formulaire
+        document.getElementById('forecastForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const product = document.getElementById('productInput').value;
+            const days = document.getElementById('daysSelect').value;
+
+            // Afficher le spinner
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('forecastResult').style.display = 'none';
+            document.getElementById('initialMessage').style.display = 'none';
+
+            try {
+                const response = await fetch(`/analysis/api/forecast?product=${encodeURIComponent(product)}&days=${days}`);
+                const data = await response.json();
+
+                displayForecast(data, days);
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la récupération des données');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        });
+
+        function displayForecast(data, days) {
+            // Afficher la zone de résultat
+            document.getElementById('forecastResult').style.display = 'block';
+
+            // Remplir les cartes de résumé
+            document.getElementById('currentPrice').textContent = data.currentPrice ? '€' + data.currentPrice.toFixed(2) : '-';
+            document.getElementById('predictedPrice').textContent = data.predictedPrice ? '€' + data.predictedPrice.toFixed(2) : '-';
+            document.getElementById('productName').textContent = data.productName;
+
+            // Variation
+            const percentChange = document.getElementById('percentChange');
+            if (data.percentChange) {
+                const sign = data.trendDirection === 'UP' ? '+' : '-';
+                percentChange.textContent = sign + data.percentChange.toFixed(2) + '%';
+                percentChange.className = data.trendDirection === 'UP' ? 'text-danger mb-0' : 'text-success mb-0';
+            }
+
+            // Confiance
+            const confidence = document.getElementById('confidence');
+            confidence.textContent = data.confidence || 'UNKNOWN';
+            confidence.className = 'mb-0 ';
+            if (data.confidence === 'HIGH') confidence.className += 'text-success';
+            else if (data.confidence === 'MEDIUM') confidence.className += 'text-warning';
+            else confidence.className += 'text-danger';
+
+            // Carte de prédiction
+            const predictionCard = document.getElementById('predictionCard');
+            predictionCard.className = 'card prediction-card shadow-sm mb-4 ' +
+                (data.trendDirection === 'UP' ? 'trend-up' : 'trend-down');
+
+            // Alerte de tendance
+            const trendAlert = document.getElementById('trendAlert');
+            const trendMessage = document.getElementById('trendMessage');
+            if (data.trendDirection === 'UP') {
+                trendAlert.className = 'alert alert-danger';
+                trendMessage.innerHTML = '<i class="fas fa-arrow-up"></i> <strong>Tendance à la hausse</strong><br>Le prix devrait augmenter de ' + data.percentChange.toFixed(2) + '% dans les ' + days + ' prochains jours.';
+            } else {
+                trendAlert.className = 'alert alert-success';
+                trendMessage.innerHTML = '<i class="fas fa-arrow-down"></i> <strong>Tendance à la baisse</strong><br>Le prix devrait diminuer de ' + data.percentChange.toFixed(2) + '% dans les ' + days + ' prochains jours.';
+            }
+
+            // Alerte de confiance
+            const confidenceAlert = document.getElementById('confidenceAlert');
+            const confidenceMessage = document.getElementById('confidenceMessage');
+            if (data.confidence === 'HIGH') {
+                confidenceAlert.className = 'alert alert-success';
+                confidenceMessage.innerHTML = '<strong>Fiabilité élevée</strong><br>Cette prédiction est basée sur suffisamment de données historiques.';
+            } else if (data.confidence === 'MEDIUM') {
+                confidenceAlert.className = 'alert alert-warning';
+                confidenceMessage.innerHTML = '<strong>Fiabilité moyenne</strong><br>Cette prédiction est indicative mais peut varier.';
+            } else {
+                confidenceAlert.className = 'alert alert-danger';
+                confidenceMessage.innerHTML = '<strong>Fiabilité faible</strong><br>Pas assez de données pour une prédiction fiable. Achetez plus ce produit pour améliorer la précision.';
+            }
+
+            // Recommandation
+            const recommendation = document.getElementById('recommendation');
+            if (data.trendDirection === 'UP') {
+                if (data.confidence === 'HIGH' || data.confidence === 'MEDIUM') {
+                    recommendation.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> Nous vous conseillons d\'<strong>acheter maintenant</strong> avant que le prix n\'augmente.';
+                } else {
+                    recommendation.innerHTML = '<i class="fas fa-info-circle"></i> La tendance suggère une hausse, mais les données sont insuffisantes pour une recommandation ferme.';
+                }
+            } else {
+                if (data.confidence === 'HIGH' || data.confidence === 'MEDIUM') {
+                    recommendation.innerHTML = '<i class="fas fa-clock text-info"></i> Vous pouvez <strong>attendre</strong> pour acheter, le prix devrait baisser.';
+                } else {
+                    recommendation.innerHTML = '<i class="fas fa-info-circle"></i> La tendance suggère une baisse, mais les données sont insuffisantes pour une recommandation ferme.';
+                }
+            }
+
+            // Créer le graphique
+            createPredictionChart(data, days);
+        }
+
+        function createPredictionChart(data, days) {
+            const ctx = document.getElementById('predictionChart');
+
+            if (predictionChart) {
+                predictionChart.destroy();
+            }
+
+            // Dates pour le graphique
+            const today = new Date();
+            const futureDate = new Date(today);
+            futureDate.setDate(futureDate.getDate() + parseInt(days));
+
+            predictionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [
+                        'Aujourd\'hui',
+                        `Dans ${days} jours`
+                    ],
+                    datasets: [{
+                        label: 'Prix (€)',
+                        data: [data.currentPrice, data.predictedPrice],
+                        borderColor: data.trendDirection === 'UP' ? 'rgb(220, 53, 69)' : 'rgb(25, 135, 84)',
+                        backgroundColor: data.trendDirection === 'UP' ? 'rgba(220, 53, 69, 0.1)' : 'rgba(25, 135, 84, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Prix: €' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value.toFixed(2);
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Prix (€)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Auto-complétion des produits (charger depuis l'API)
+        async function loadProductSuggestions() {
+            try {
+                // Vous pouvez créer un endpoint qui retourne la liste des produits
+                // Pour l'instant, laissé vide
+            } catch (error) {
+                console.error('Erreur chargement suggestions:', error);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadProductSuggestions);
+    </script>
+
+    <!-- Modal Comment ça fonctionne -->
+    <div class="modal fade" id="howItWorksModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-lightbulb"></i> Comment fonctionnent les Prédictions ?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-primary"><i class="fas fa-calculator"></i> Méthode : Régression Linéaire</h6>
+                    <p>Le système analyse l'historique des prix de vos tickets pour détecter une tendance et extrapoler le prix futur.</p>
+
+                    <h6 class="text-success mt-3"><i class="fas fa-check-circle"></i> Niveaux de Confiance</h6>
+                    <ul>
+                        <li><strong class="text-success">HIGH :</strong> Plus de 5 observations et R² &gt; 0.8 (très fiable)</li>
+                        <li><strong class="text-warning">MEDIUM :</strong> Plus de 5 observations et R² &gt; 0.5 (fiable)</li>
+                        <li><strong class="text-danger">LOW :</strong> Moins de 5 observations ou R² &lt; 0.5 (peu fiable)</li>
+                    </ul>
+
+                    <h6 class="text-danger mt-3"><i class="fas fa-exclamation-triangle"></i> Limitations</h6>
+                    <ul class="mb-0">
+                        <li>Les prédictions sont basées sur les tendances passées</li>
+                        <li>Les événements exceptionnels (promotions, pénuries) ne sont pas pris en compte</li>
+                        <li>Plus vous avez de données, plus la prédiction est fiable</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparaison Globale | ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .best-store-badge {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        .price-cell-best {
+            background-color: #d4edda !important;
+            font-weight: bold;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/compare">Comparaison</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h2><i class="fas fa-th-list text-primary"></i> Vue Globale - Comparaison de Tous les Produits</h2>
+                <p class="text-muted">Optimisez vos achats en choisissant le meilleur magasin pour chaque produit</p>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#howItWorksModal">
+                    <i class="fas fa-info-circle"></i> Comment ça fonctionne ?
+                </button>
+            </div>
+            <div class="col-md-3 text-end">
+                <a href="/compare" class="btn btn-secondary me-2">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+                <button class="btn btn-success" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimer
+                </button>
+            </div>
+        </div>
+
+        <!-- Résumé -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="summary-card text-center">
+                    <h6>PRODUITS COMPARÉS</h6>
+                    <h2 th:text="${comparison.productCount}">0</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card text-center">
+                    <h6>ÉCONOMIES TOTALES POSSIBLES</h6>
+                    <h2 th:text="'€' + ${#numbers.formatDecimal(comparison.totalPotentialSavings, 1, 2)}">€0.00</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card text-center">
+                    <h6>MEILLEUR MAGASIN GLOBAL</h6>
+                    <h2 th:if="${comparison.storeWinCount != null && !comparison.storeWinCount.isEmpty()}">
+                        <th:block th:each="entry, iterStat : ${comparison.storeWinCount}">
+                            <span th:if="${iterStat.first}" th:text="${entry.key}">-</span>
+                        </th:block>
+                    </h2>
+                    <h2 th:if="${comparison.storeWinCount == null || comparison.storeWinCount.isEmpty()}">-</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si pas de données -->
+        <div th:if="${comparison.productCount == 0}" class="alert alert-warning text-center">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h4>Aucun produit à comparer</h4>
+            <p>Pour voir la comparaison globale, vous devez avoir acheté les mêmes produits dans au moins 2 magasins différents.</p>
+            <a href="/tickets/create" class="btn btn-primary mt-3">
+                <i class="fas fa-plus"></i> Ajouter des tickets
+            </a>
+        </div>
+
+        <!-- Tableau de comparaison -->
+        <div th:if="${comparison.productCount > 0}" class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-table"></i> Tableau Comparatif Détaillé</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th><i class="fas fa-box"></i> Produit</th>
+                                <th><i class="fas fa-tag"></i> Catégorie</th>
+                                <th th:each="comp : ${comparison.comparisons}" th:if="${compStat.first}">
+                                    <th:block th:each="store : ${comp.storePrices.keySet()}" class="text-center">
+                                        <i class="fas fa-store"></i> <span th:text="${store}"></span>
+                                    </th:block>
+                                </th>
+                                <th class="text-center"><i class="fas fa-trophy"></i> Meilleur</th>
+                                <th class="text-center"><i class="fas fa-piggy-bank"></i> Économie</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="comp : ${comparison.comparisons}">
+                                <td><strong th:text="${comp.productName}">Produit</strong></td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${comp.category}">Catégorie</span>
+                                </td>
+                                <td th:each="store : ${comp.storePrices.keySet()}"
+                                    class="text-center"
+                                    th:classappend="${store == comp.cheapestStore} ? 'price-cell-best' : ''">
+                                    <span th:text="'€' + ${#numbers.formatDecimal(comp.storePrices.get(store), 1, 2)}">€0.00</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="best-store-badge" th:text="${comp.cheapestStore}">Magasin</span>
+                                </td>
+                                <td class="text-center text-success">
+                                    <strong th:text="'€' + ${#numbers.formatDecimal(
+                                        #lists.toList(comp.storePrices.values()).stream().max(T(java.util.Comparator).naturalOrder()).orElse(0) -
+                                        comp.cheapestPrice, 1, 2)}">€0.00</strong>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques par magasin -->
+        <div th:if="${comparison.productCount > 0}" class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-trophy"></i> Classement des Magasins</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="entry : ${comparison.storeWinCount}" class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 th:text="${entry.key}">Magasin</h5>
+                                <span class="badge bg-success" th:text="${entry.value} + ' produits les moins chers'">0 produits</span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                     th:style="'width: ' + (${entry.value} * 100 / ${comparison.productCount}) + '%'"
+                                     th:text="${#numbers.formatDecimal((${entry.value} * 100 / ${comparison.productCount}), 1, 0)} + '%'">
+                                    0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Répartition</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="storeChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Comment ça fonctionne -->
+    <div class="modal fade" id="howItWorksModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-lightbulb"></i> Comment fonctionne la Vue Globale ?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-primary"><i class="fas fa-table"></i> Méthode : Comparaison Matricielle</h6>
+                    <p>Le système affiche tous les produits achetés dans plusieurs magasins sous forme de tableau pour une comparaison rapide.</p>
+
+                    <h6 class="text-success mt-3"><i class="fas fa-calculator"></i> Calculs Effectués</h6>
+                    <ul>
+                        <li><strong>Prix Moyens :</strong> Pour chaque produit dans chaque magasin</li>
+                        <li><strong>Meilleur Magasin :</strong> Badge doré sur le prix le plus bas</li>
+                        <li><strong>Économies Totales :</strong> Somme si vous achetiez tout au meilleur prix</li>
+                        <li><strong>Classement Magasins :</strong> Nombre de fois où chaque magasin est le moins cher</li>
+                    </ul>
+
+                    <h6 class="text-warning mt-3"><i class="fas fa-trophy"></i> Magasin Gagnant</h6>
+                    <ul>
+                        <li>Statistiques par magasin : combien de produits sont les moins chers</li>
+                        <li>Graphique visuel pour identifier le magasin globalement le plus économique</li>
+                    </ul>
+
+                    <h6 class="text-danger mt-3"><i class="fas fa-exclamation-triangle"></i> Limitations</h6>
+                    <ul class="mb-0">
+                        <li>Seuls les produits achetés dans au moins 2 magasins sont affichés</li>
+                        <li>Les promotions ponctuelles faussent les moyennes</li>
+                        <li>La qualité des produits peut varier entre magasins</li>
+                        <li>Plus vous avez de tickets, plus la comparaison est précise</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script th:if="${comparison.productCount > 0}">
+        // Graphique de répartition
+        const ctx = document.getElementById('storeChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: [
+                        /*[+ th:each="entry : ${comparison.storeWinCount}" +]*/
+                        /*[[${entry.key}]]*//*[+ th:if="!${entryStat.last}" +]*/,/*[/]*/
+                        /*[/]*/
+                    ],
+                    datasets: [{
+                        data: [
+                            /*[+ th:each="entry : ${comparison.storeWinCount}" +]*/
+                            /*[[${entry.value}]]*//*[+ th:if="!${entryStat.last}" +]*/,/*[/]*/
+                            /*[/]*/
+                        ],
+                        backgroundColor: [
+                            '#0d6efd',
+                            '#198754',
+                            '#ffc107',
+                            '#dc3545',
+                            '#0dcaf0',
+                            '#6f42c1'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

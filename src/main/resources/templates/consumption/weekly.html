@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consommation - ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Styles spécifiques à la page consommation */
+        .badge.bg-warning.text-dark {
+            transition: all 0.3s;
+        }
+        .badge.bg-warning.text-dark:hover {
+            background-color: #ffc107 !important;
+            transform: scale(1.05);
+        }
+        .collapse {
+            transition: height 0.3s ease;
+        }
+        .table-sm td {
+            padding: 0.5rem;
+        }
+        tr[id^="details-"] td {
+            border: none;
+        }
+        .accordion-button {
+            font-size: 1.1rem;
+            padding: 1rem 1.25rem;
+        }
+        .accordion-button:not(.collapsed) {
+            background-color: #198754;
+            color: white;
+        }
+        .accordion-button:not(.collapsed) .badge {
+            background-color: white !important;
+            color: #198754 !important;
+        }
+        .accordion-item {
+            border: 2px solid #dee2e6;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: #198754;
+        }
+
+        /* Alignement des colonnes du tableau */
+        .table-consumption {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .table-consumption th:nth-child(1),
+        .table-consumption td:nth-child(1) {
+            width: 35%; /* Produit */
+        }
+        .table-consumption th:nth-child(2),
+        .table-consumption td:nth-child(2) {
+            width: 12%; /* Quantité */
+            text-align: right !important;
+        }
+        .table-consumption th:nth-child(3),
+        .table-consumption td:nth-child(3) {
+            width: 8%; /* Unité */
+            text-align: center !important;
+        }
+        .table-consumption th:nth-child(4),
+        .table-consumption td:nth-child(4) {
+            width: 15%; /* Coût Total */
+            text-align: right !important;
+        }
+        .table-consumption th:nth-child(5),
+        .table-consumption td:nth-child(5) {
+            width: 12%; /* Achats */
+            text-align: center !important;
+        }
+        .table-consumption th:nth-child(6),
+        .table-consumption td:nth-child(6) {
+            width: 18%; /* Prix/U Moy */
+            text-align: right !important;
+        }
+
+        /* Assurer que les cellules ne débordent pas */
+        .table-consumption td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Exception pour la colonne produit qui peut contenir le badge */
+        .table-consumption td:first-child {
+            white-space: normal;
+            overflow: visible;
+        }
+
+        /* Styles pour le tableau de détails des achats */
+        .table-details {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .table-details th:nth-child(1),
+        .table-details td:nth-child(1) {
+            width: 15%; /* Date */
+        }
+        .table-details th:nth-child(2),
+        .table-details td:nth-child(2) {
+            width: 20%; /* Magasin */
+        }
+        .table-details th:nth-child(3),
+        .table-details td:nth-child(3) {
+            width: 20%; /* Quantité */
+            text-align: right !important;
+        }
+        .table-details th:nth-child(4),
+        .table-details td:nth-child(4) {
+            width: 22%; /* Prix Unitaire */
+            text-align: right !important;
+        }
+        .table-details th:nth-child(5),
+        .table-details td:nth-child(5) {
+            width: 23%; /* Total */
+            text-align: right !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/consumption/weekly">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/compare">Comparaison</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- En-tête -->
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                <h2 class="mb-2">
+                    <i class="fas fa-chart-line text-primary"></i> Consommation de Produits
+                </h2>
+                <p class="text-muted">
+                    Période du <span th:text="${#temporals.format(startDate, 'dd/MM/yyyy')}"></span>
+                    au <span th:text="${#temporals.format(endDate, 'dd/MM/yyyy')}"></span>
+                </p>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#howItWorksModal">
+                    <i class="fas fa-info-circle"></i> Comment ça fonctionne ?
+                </button>
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn-primary-modern btn btn-warning" onclick="recategorizeAllProducts()">
+                    <i class="fas fa-sync-alt"></i> Recatégoriser
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="modern-card mb-4">
+            <div class="card-header-modern">
+                <i class="fas fa-filter"></i> Filtres et Recherche
+            </div>
+            <div class="card-body">
+                <form method="get" action="/consumption/weekly" id="filterForm">
+                    <div class="row g-3">
+                        <!-- Période prédéfinie -->
+                        <div class="col-md-3">
+                            <label class="form-label">Période</label>
+                            <select name="period" class="form-select" onchange="toggleCustomDates(this.value)">
+                                <option value="week" th:selected="${period == 'week'}">Cette semaine</option>
+                                <option value="month" th:selected="${period == 'month'}">Ce mois</option>
+                                <option value="custom" th:selected="${period == 'custom'}">Personnalisée</option>
+                            </select>
+                        </div>
+
+                        <!-- Dates personnalisées -->
+                        <div class="col-md-3" id="customDatesContainer" style="display: none;">
+                            <label class="form-label">Date début</label>
+                            <input type="date" name="startDate" class="form-control"
+                                   th:value="${startDate}">
+                        </div>
+                        <div class="col-md-3" id="customDatesContainer2" style="display: none;">
+                            <label class="form-label">Date fin</label>
+                            <input type="date" name="endDate" class="form-control"
+                                   th:value="${endDate}">
+                        </div>
+
+                        <!-- Recherche -->
+                        <div class="col-md-3">
+                            <label class="form-label">Rechercher un produit</label>
+                            <input type="text" name="search" class="form-control"
+                                   placeholder="Nom ou catégorie..."
+                                   th:value="${search}">
+                        </div>
+
+                        <!-- Tri -->
+                        <div class="col-md-2">
+                            <label class="form-label">Trier par</label>
+                            <select name="sortBy" class="form-select">
+                                <option value="totalCost" th:selected="${sortBy == 'totalCost'}">Coût total</option>
+                                <option value="productName" th:selected="${sortBy == 'productName'}">Nom</option>
+                                <option value="category" th:selected="${sortBy == 'category'}">Catégorie</option>
+                                <option value="totalQuantity" th:selected="${sortBy == 'totalQuantity'}">Quantité</option>
+                                <option value="purchaseCount" th:selected="${sortBy == 'purchaseCount'}">Nb achats</option>
+                                <option value="averagePricePerUnit" th:selected="${sortBy == 'averagePricePerUnit'}">Prix/unité</option>
+                            </select>
+                        </div>
+
+                        <!-- Ordre -->
+                        <div class="col-md-2">
+                            <label class="form-label">Ordre</label>
+                            <select name="sortOrder" class="form-select">
+                                <option value="desc" th:selected="${sortOrder == 'desc'}">Décroissant</option>
+                                <option value="asc" th:selected="${sortOrder == 'asc'}">Croissant</option>
+                            </select>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Appliquer
+                            </button>
+                            <a href="/consumption/weekly" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Réinitialiser
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Résultats groupés par catégorie -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-shopping-cart"></i> Produits Achetés par Catégorie
+                    <span class="badge bg-light text-dark" th:text="${consumption.size()}"></span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <!-- Accordéon par catégorie -->
+                <div class="accordion" id="categoryAccordion">
+                    <th:block th:each="categoryEntry, catStat : ${consumptionByCategory}">
+                        <div class="accordion-item">
+                            <!-- En-tête de catégorie -->
+                            <h2 class="accordion-header" th:id="'heading-' + ${catStat.index}">
+                                <button class="accordion-button"
+                                        th:classappend="${catStat.index > 0} ? 'collapsed' : ''"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        th:data-bs-target="'#collapse-' + ${catStat.index}"
+                                        th:aria-expanded="${catStat.index == 0}"
+                                        th:aria-controls="'collapse-' + ${catStat.index}">
+                                    <span class="fs-5">
+                                        <i class="fas fa-tag me-2"></i>
+                                        <strong th:text="${categoryEntry.key}"></strong>
+                                        <span class="badge bg-primary ms-2" th:text="${categoryEntry.value.size()} + ' produits'"></span>
+                                        <span class="badge bg-danger ms-1"
+                                              th:text="'€' + ${#numbers.formatDecimal(#aggregates.sum(categoryEntry.value.![totalCost]), 1, 2)}"></span>
+                                    </span>
+                                </button>
+                            </h2>
+
+                            <!-- Contenu de la catégorie -->
+                            <div th:id="'collapse-' + ${catStat.index}"
+                                 class="accordion-collapse collapse"
+                                 th:classappend="${catStat.index == 0} ? 'show' : ''"
+                                 th:aria-labelledby="'heading-' + ${catStat.index}">
+                                <div class="accordion-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-striped table-consumption mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th><i class="fas fa-box"></i> Produit</th>
+                                                    <th class="text-end"><i class="fas fa-weight"></i> Quantité</th>
+                                                    <th class="text-center"><i class="fas fa-ruler"></i> Unité</th>
+                                                    <th class="text-end"><i class="fas fa-euro-sign"></i> Coût Total</th>
+                                                    <th class="text-center"><i class="fas fa-shopping-basket"></i> Achats</th>
+                                                    <th class="text-end"><i class="fas fa-calculator"></i> Prix/U Moy</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <th:block th:each="item, iterStat : ${categoryEntry.value}">
+                                                    <!-- Ligne principale du produit -->
+                                                    <tr>
+                                                        <td>
+                                                            <strong th:text="${item.productName}"></strong>
+                                                            <!-- Badge si acheté plusieurs fois -->
+                                                            <span th:if="${item.purchaseCount > 1}"
+                                                                  class="badge bg-warning text-dark ms-2"
+                                                                  style="cursor: pointer;"
+                                                                  data-bs-toggle="collapse"
+                                                                  th:data-bs-target="'#details-' + ${catStat.index} + '-' + ${iterStat.index}"
+                                                                  title="Cliquez pour voir les détails">
+                                                                <i class="fas fa-chevron-down"></i>
+                                                                <span th:text="${item.purchaseCount}"></span> achats
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <strong th:text="${#numbers.formatDecimal(item.totalQuantity, 1, 2)}"></strong>
+                                                        </td>
+                                                        <td th:text="${item.unit ?: '-'}"></td>
+                                                        <td class="text-end">
+                                                            <strong class="text-danger" th:text="${'€' + #numbers.formatDecimal(item.totalCost, 1, 2)}"></strong>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span class="badge bg-primary" th:text="${item.purchaseCount}"></span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <span class="text-muted" th:text="${'€' + #numbers.formatDecimal(item.averagePricePerUnit, 1, 2)}"></span>
+                                                        </td>
+                                                    </tr>
+
+                                                    <!-- Ligne dépliable avec les détails (seulement si > 1 achat) -->
+                                                    <tr th:if="${item.purchaseCount > 1}"
+                                                        th:id="'details-' + ${catStat.index} + '-' + ${iterStat.index}"
+                                                        class="collapse">
+                                                        <td colspan="6" class="bg-light p-0">
+                                                            <div class="p-3">
+                                                                <h6 class="text-muted mb-2">
+                                                                    <i class="fas fa-list"></i> Détails des achats
+                                                                </h6>
+                                                                <table class="table table-sm table-bordered table-details mb-0">
+                                                                    <thead class="table-secondary">
+                                                                        <tr>
+                                                                            <th><i class="fas fa-calendar"></i> Date</th>
+                                                                            <th><i class="fas fa-store"></i> Magasin</th>
+                                                                            <th class="text-end"><i class="fas fa-weight"></i> Quantité</th>
+                                                                            <th class="text-end"><i class="fas fa-tag"></i> Prix Unitaire</th>
+                                                                            <th class="text-end"><i class="fas fa-calculator"></i> Total</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr th:each="detail : ${item.purchaseDetails}">
+                                                                            <td th:text="${#temporals.format(detail.date, 'dd/MM/yyyy')}"></td>
+                                                                            <td>
+                                                                                <span class="badge bg-secondary" th:text="${detail.store}"></span>
+                                                                            </td>
+                                                                            <td class="text-end" th:text="${#numbers.formatDecimal(detail.quantity, 1, 2)}"></td>
+                                                                            <td class="text-end" th:text="${'€' + #numbers.formatDecimal(detail.price, 1, 2)}"></td>
+                                                                            <td class="text-end">
+                                                                                <strong th:text="${'€' + #numbers.formatDecimal(detail.totalPrice, 1, 2)}"></strong>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </th:block>
+                                            </tbody>
+                                            <!-- Sous-total par catégorie -->
+                                            <tfoot class="table-light fw-bold">
+                                                <tr>
+                                                    <td>Sous-total <span th:text="${categoryEntry.key}"></span></td>
+                                                    <td colspan="2" class="text-end">
+                                                        <span th:text="${categoryEntry.value.size()} + ' produits'"></span>
+                                                    </td>
+                                                    <td class="text-end text-danger">
+                                                        €<span th:text="${#numbers.formatDecimal(#aggregates.sum(categoryEntry.value.![totalCost]), 1, 2)}"></span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span th:text="${#aggregates.sum(categoryEntry.value.![purchaseCount])}"></span>
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+
+                <!-- Message si aucun produit -->
+                <div th:if="${consumption.isEmpty()}" class="text-center text-muted py-5">
+                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                    <p class="mb-0">Aucun produit trouvé pour cette période</p>
+                    <small>Créez des tickets pour voir les statistiques</small>
+                </div>
+            </div>
+
+            <!-- Total général -->
+            <div th:if="${!consumption.isEmpty()}" class="card-footer bg-dark text-white">
+                <div class="row">
+                    <div class="col-md-8 text-end">
+                        <h5 class="mb-0">TOTAL GÉNÉRAL :</h5>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <h5 class="mb-0 text-warning">
+                            €<span th:text="${#numbers.formatDecimal(#aggregates.sum(consumption.![totalCost]), 1, 2)}"></span>
+                        </h5>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <h5 class="mb-0">
+                            <span class="badge bg-light text-dark" th:text="${#aggregates.sum(consumption.![purchaseCount])} + ' achats'"></span>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Afficher/masquer les champs de dates personnalisées
+        function toggleCustomDates(period) {
+            const container1 = document.getElementById('customDatesContainer');
+            const container2 = document.getElementById('customDatesContainer2');
+            if (period === 'custom') {
+                container1.style.display = 'block';
+                container2.style.display = 'block';
+            } else {
+                container1.style.display = 'none';
+                container2.style.display = 'none';
+            }
+        }
+
+        // Recatégoriser tous les produits
+        function recategorizeAllProducts() {
+            if (!confirm('Voulez-vous vraiment recatégoriser tous les produits ? Cette action va mettre à jour toutes les catégories basées sur les noms des produits.')) {
+                return;
+            }
+
+            // Désactiver le bouton pendant l'opération
+            const btn = event.target.closest('button');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recatégorisation en cours...';
+
+            fetch('/tickets/api/recategorize-all', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Recatégorisation terminée avec succès !\n\n' + data.updatedCount + ' produit(s) mis à jour.');
+                    // Recharger la page pour afficher les nouvelles catégories
+                    window.location.reload();
+                } else {
+                    alert('❌ Erreur : ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('❌ Erreur lors de la recatégorisation');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            });
+        }
+
+        // Initialiser au chargement
+        window.addEventListener('DOMContentLoaded', function() {
+            const periodSelect = document.querySelector('select[name="period"]');
+            if (periodSelect) {
+                toggleCustomDates(periodSelect.value);
+            }
+        });
+    </script>
+
+    <!-- Modal Comment ça fonctionne -->
+    <div class="modal fade" id="howItWorksModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-lightbulb"></i> Comment fonctionne le Suivi de Consommation ?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-primary"><i class="fas fa-calendar-week"></i> Méthode : Agrégation Temporelle</h6>
+                    <p>Le système regroupe tous vos achats par période (semaine, mois) et par produit pour analyser vos habitudes.</p>
+
+                    <h6 class="text-success mt-3"><i class="fas fa-list-ul"></i> Données Affichées</h6>
+                    <ul>
+                        <li><strong>Quantité Totale :</strong> Somme de toutes les quantités achetées pour un produit</li>
+                        <li><strong>Coût Total :</strong> Dépense totale pour ce produit sur la période</li>
+                        <li><strong>Nombre d'Achats :</strong> Combien de fois vous avez acheté ce produit</li>
+                        <li><strong>Prix Moyen :</strong> Prix unitaire moyen calculé automatiquement</li>
+                        <li><strong>Détails par Achat :</strong> Historique avec date, magasin, prix unitaire</li>
+                    </ul>
+
+                    <h6 class="text-warning mt-3"><i class="fas fa-filter"></i> Filtres Disponibles</h6>
+                    <ul>
+                        <li><strong>Par Période :</strong> Semaine actuelle, mois actuel, ou période personnalisée</li>
+                        <li><strong>Par Catégorie :</strong> Filtre les produits par type (Fruits, Viande, etc.)</li>
+                        <li><strong>Par Recherche :</strong> Trouve rapidement un produit spécifique</li>
+                        <li><strong>Par Tri :</strong> Trie par quantité, coût, nom ou prix moyen</li>
+                    </ul>
+
+                    <h6 class="text-danger mt-3"><i class="fas fa-exclamation-triangle"></i> Limitations</h6>
+                    <ul class="mb-0">
+                        <li>Seuls les tickets de la période sélectionnée sont analysés</li>
+                        <li>Les produits mal catégorisés apparaissent dans "Autre"</li>
+                        <li>Les variations de prix entre magasins sont moyennées</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

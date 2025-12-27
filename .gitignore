@@ -1,0 +1,126 @@
+# ===================================
+# Java & Maven
+# ===================================
+target/
+*.jar
+*.war
+*.ear
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ===================================
+# Gradle (à supprimer si présent)
+# ===================================
+.gradle/
+build/
+gradle/
+gradlew
+gradlew.bat
+*.gradle
+settings.gradle
+
+# ===================================
+# IDE
+# ===================================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+
+# ===================================
+# Docker & Environment
+# ===================================
+.env
+docker-compose.override.yml
+*.pid
+
+# ===================================
+# Database
+# ===================================
+*.db
+*.h2.db
+*.trace.db
+*.lock.db
+
+# ===================================
+# Logs
+# ===================================
+logs/
+*.log
+*.log.*
+
+# ===================================
+# OS
+# ===================================
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+
+# ===================================
+# Temporary & Cache
+# ===================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.cache
+.sass-cache/
+
+# ===================================
+# Upload & User Data
+# ===================================
+uploads/
+uploads/*
+!uploads/.gitkeep
+
+# ===================================
+# Application Specific
+# ===================================
+/data/
+tessdata/
+*.csv
+

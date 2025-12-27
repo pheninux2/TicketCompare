@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Fragments Layout</title>
+</head>
+<body>
+
+<!-- Fragment Footer -->
+<footer th:fragment="footer" class="footer bg-gradient-primary text-white py-4 mt-auto">
+    <div class="container">
+        <div class="row align-items-center">
+            <!-- Colonne Gauche : Auteur -->
+            <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
+                <h6 class="mb-1">
+                    <i class="fas fa-user-circle"></i> Mohamed Adil HADDAD
+                </h6>
+                <p class="mb-0 small">
+                    <i class="fas fa-envelope"></i>
+                    <a href="mailto:adil.haddad.xdev@gmail.com" class="text-white text-decoration-none">
+                        adil.haddad.xdev@gmail.com
+                    </a>
+                </p>
+            </div>
+
+            <!-- Colonne Centre : Copyright -->
+            <div class="col-md-4 text-center mb-3 mb-md-0">
+                <p class="mb-1">
+                    <i class="fas fa-copyright"></i>
+                    <span th:text="${#temporals.year(#temporals.createNow())}">2025</span>
+                    <strong>ReceiptIQ</strong> 🧠
+                </p>
+                <p class="mb-0 small">Tous droits réservés</p>
+            </div>
+
+            <!-- Colonne Droite : Version -->
+            <div class="col-md-4 text-center text-md-end">
+                <p class="mb-0">
+                    <i class="fas fa-code-branch"></i>
+                    Version <span th:text="${@environment.getProperty('project.version') ?: '1.0.0-SNAPSHOT'}">1.0.0-SNAPSHOT</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+
+        .footer {
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer a:hover {
+            text-decoration: underline !important;
+        }
+    </style>
+</footer>
+
+</body>
+</html>
+

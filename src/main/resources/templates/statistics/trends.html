@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tendances des Prix - ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/statistics/dashboard">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/compare">Comparaison</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="mb-2">
+                    <i class="fas fa-chart-line text-primary"></i> Tendances des Prix
+                </h2>
+                <p class="text-muted">Évolution des prix dans le temps</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-info btn-sm me-2" type="button" data-bs-toggle="modal" data-bs-target="#howItWorksModal">
+                    <i class="fas fa-info-circle"></i> Comment ça fonctionne ?
+                </button>
+                <a href="/statistics/dashboard" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </div>
+
+        <!-- Modal Comment ça fonctionne -->
+        <div class="modal fade" id="howItWorksModal" tabindex="-1" aria-labelledby="howItWorksModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="howItWorksModalLabel">
+                            <i class="fas fa-info-circle"></i> Comment fonctionnent les Tendances ?
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6><i class="fas fa-chart-line"></i> Analyse des Tendances</h6>
+                        <p>Cette page analyse l'évolution des prix de vos produits basée sur vos tickets enregistrés.</p>
+
+                        <h6 class="mt-3"><i class="fas fa-chart-bar"></i> Statistiques Affichées</h6>
+                        <ul>
+                            <li><strong>Prix Moyen Global :</strong> Moyenne de tous les prix sur la période</li>
+                            <li><strong>Tendance :</strong> Hausse ou baisse des prix (comparaison début/fin période)</li>
+                            <li><strong>Produits Analysés :</strong> Nombre de produits différents</li>
+                            <li><strong>Observations :</strong> Nombre total d'achats enregistrés</li>
+                        </ul>
+
+                        <h6 class="mt-3"><i class="fas fa-arrow-down text-success"></i> Plus Fortes Baisses</h6>
+                        <p>Liste des produits dont le prix a le plus baissé entre votre premier et dernier achat.</p>
+
+                        <h6 class="mt-3"><i class="fas fa-arrow-up text-danger"></i> Plus Fortes Hausses</h6>
+                        <p>Liste des produits dont le prix a le plus augmenté entre votre premier et dernier achat.</p>
+
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-lightbulb"></i> <strong>Astuce :</strong> Les données sont basées sur VOS achats réels. Plus vous scannez de tickets, plus l'analyse sera précise !
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form id="filterForm">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Catégorie</label>
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">Toutes les catégories</option>
+                                <option value="Fruits et légumes">Fruits et légumes</option>
+                                <option value="Viandes et poissons">Viandes et poissons</option>
+                                <option value="Produits laitiers">Produits laitiers</option>
+                                <option value="Épicerie">Épicerie</option>
+                                <option value="Boissons">Boissons</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Période</label>
+                            <select class="form-select" id="periodFilter">
+                                <option value="7">7 derniers jours</option>
+                                <option value="30" selected>30 derniers jours</option>
+                                <option value="90">90 derniers jours</option>
+                                <option value="365">1 an</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100" onclick="loadTrends()">
+                                <i class="fas fa-sync"></i> Actualiser
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Statistiques globales -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Prix Moyen Global</h6>
+                        <h3 class="text-primary" id="avgGlobalPrice">-</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Tendance</h6>
+                        <h3 id="trendIndicator">-</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Produits Analysés</h6>
+                        <h3 class="text-info" id="productCount">-</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Observations</h6>
+                        <h3 class="text-secondary" id="observationCount">-</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique principal -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Évolution des Prix Moyens</h5>
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Top variations -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-arrow-down"></i> Plus Fortes Baisses</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="priceDrops" class="list-group">
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-spinner fa-spin"></i> Chargement...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h6 class="mb-0"><i class="fas fa-arrow-up"></i> Plus Fortes Hausses</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="priceRises" class="list-group">
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-spinner fa-spin"></i> Chargement...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let trendsChart = null;
+
+        // Charger au démarrage
+        window.addEventListener('DOMContentLoaded', loadTrends);
+
+        async function loadTrends() {
+            const period = document.getElementById('periodFilter').value || 30;
+
+            try {
+                const response = await fetch(`/statistics/api/trends?days=${period}`);
+                const data = await response.json();
+
+                if (data.empty) {
+                    showNoDataMessage();
+                    return;
+                }
+
+                updateStats(data);
+                updateChart(data);
+                updateVariations(data);
+            } catch (error) {
+                console.error('Erreur lors du chargement des tendances:', error);
+                showErrorMessage();
+            }
+        }
+
+        function showNoDataMessage() {
+            document.getElementById('avgGlobalPrice').textContent = '-';
+            document.getElementById('trendIndicator').innerHTML = '<span class="text-muted">-</span>';
+            document.getElementById('productCount').textContent = '0';
+            document.getElementById('observationCount').textContent = '0';
+            document.getElementById('priceDrops').innerHTML = '<div class="text-center text-muted py-3">Aucune donnée disponible</div>';
+            document.getElementById('priceRises').innerHTML = '<div class="text-center text-muted py-3">Aucune donnée disponible</div>';
+        }
+
+        function showErrorMessage() {
+            document.getElementById('priceDrops').innerHTML = '<div class="text-center text-danger py-3"><i class="fas fa-exclamation-triangle"></i> Erreur de chargement</div>';
+            document.getElementById('priceRises').innerHTML = '<div class="text-center text-danger py-3"><i class="fas fa-exclamation-triangle"></i> Erreur de chargement</div>';
+        }
+
+        function updateStats(data) {
+            document.getElementById('avgGlobalPrice').textContent = formatPrice(data.avgPrice || 0);
+
+            if (data.trend && data.trendPercent) {
+                const trendHtml = data.trend === 'up'
+                    ? `<span class="text-danger"><i class="fas fa-arrow-up"></i> +${data.trendPercent}%</span>`
+                    : `<span class="text-success"><i class="fas fa-arrow-down"></i> -${data.trendPercent}%</span>`;
+                document.getElementById('trendIndicator').innerHTML = trendHtml;
+            } else {
+                document.getElementById('trendIndicator').innerHTML = '<span class="text-muted">-</span>';
+            }
+
+            document.getElementById('productCount').textContent = data.productCount || 0;
+            document.getElementById('observationCount').textContent = data.observations || 0;
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('trendsChart');
+
+            if (trendsChart) {
+                trendsChart.destroy();
+            }
+
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates.map(d => new Date(d).toLocaleDateString('fr-FR')),
+                    datasets: [{
+                        label: 'Prix Moyen (€)',
+                        data: data.prices,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2) + ' €';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateVariations(data) {
+            // Baisses
+            let dropsHtml = '';
+            if (data.drops && data.drops.length > 0) {
+                data.drops.forEach(item => {
+                    dropsHtml += `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${item.name}</strong><br>
+                                    <small class="text-muted">${formatPrice(item.oldPrice)} → ${formatPrice(item.newPrice)}</small>
+                                </div>
+                                <span class="badge bg-success">${item.change}%</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                dropsHtml = '<div class="text-center text-muted py-3">Aucune baisse de prix détectée</div>';
+            }
+            document.getElementById('priceDrops').innerHTML = dropsHtml;
+
+            // Hausses
+            let risesHtml = '';
+            if (data.rises && data.rises.length > 0) {
+                data.rises.forEach(item => {
+                    risesHtml += `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${item.name}</strong><br>
+                                    <small class="text-muted">${formatPrice(item.oldPrice)} → ${formatPrice(item.newPrice)}</small>
+                                </div>
+                                <span class="badge bg-danger">+${item.change}%</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                risesHtml = '<div class="text-center text-muted py-3">Aucune hausse de prix détectée</div>';
+            }
+            document.getElementById('priceRises').innerHTML = risesHtml;
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(price);
+        }
+    </script>
+</body>
+</html>
+

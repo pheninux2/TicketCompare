@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un Ticket - ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .option-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid #dee2e6;
+            height: 100%;
+        }
+        .option-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #0d6efd;
+        }
+        .option-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .upload-area {
+            border: 3px dashed #0d6efd;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+        .upload-area:hover {
+            border-color: #0a58ca;
+            background-color: #e7f1ff;
+        }
+        .upload-area.dragover {
+            border-color: #198754;
+            background-color: #d1e7dd;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/compare">Comparaison</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="display-5 mb-3"><i class="fas fa-plus-circle"></i> Ajouter un Ticket</h1>
+                <p class="lead text-muted">Choisissez la méthode d'ajout qui vous convient</p>
+            </div>
+        </div>
+
+        <!-- Options principales -->
+        <div class="row g-4 mb-5">
+            <!-- Option 1: Scanner -->
+            <div class="col-md-4">
+                <div class="card option-card" data-bs-toggle="modal" data-bs-target="#scanModal">
+                    <div class="card-body text-center p-4">
+                        <div class="option-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <h3 class="card-title mb-3">Scanner</h3>
+                        <p class="card-text text-muted">
+                            Prenez une photo de votre ticket avec votre caméra ou uploadez une image
+                        </p>
+                        <button type="button" class="btn btn-primary btn-lg mt-3">
+                            <i class="fas fa-camera"></i> Scanner
+                        </button>
+                    </div>
+                </div>
+                <!-- Comment ça marche -->
+                <div class="card mt-3 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-info-circle"></i> Comment ça marche ?</h6>
+                    </div>
+                    <div class="card-body">
+                        <ol class="small mb-0">
+                            <li>Prenez une photo claire du ticket</li>
+                            <li>L'OCR analyse automatiquement le texte</li>
+                            <li>Les produits sont extraits et catégorisés</li>
+                            <li>Vérifiez et validez les informations</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 2: Saisie Manuelle -->
+            <div class="col-md-4">
+                <div class="card option-card" onclick="window.location.href='/tickets/create/manual'">
+                    <div class="card-body text-center p-4">
+                        <div class="option-icon">
+                            <i class="fas fa-keyboard"></i>
+                        </div>
+                        <h3 class="card-title mb-3">Saisie Manuelle</h3>
+                        <p class="card-text text-muted">
+                            Remplissez manuellement les informations de votre ticket
+                        </p>
+                        <button type="button" class="btn btn-success btn-lg mt-3">
+                            <i class="fas fa-edit"></i> Créer
+                        </button>
+                    </div>
+                </div>
+                <!-- Comment ça marche -->
+                <div class="card mt-3 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-info-circle"></i> Comment ça marche ?</h6>
+                    </div>
+                    <div class="card-body">
+                        <ol class="small mb-0">
+                            <li>Renseignez date et magasin</li>
+                            <li>Ajoutez chaque produit avec son prix</li>
+                            <li>Le total est calculé automatiquement</li>
+                            <li>Enregistrez votre ticket complet</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 3: Depuis un Fichier -->
+            <div class="col-md-4">
+                <div class="card option-card" data-bs-toggle="modal" data-bs-target="#scanModal" onclick="setTimeout(() => document.getElementById('fileInput').click(), 500)">
+                    <div class="card-body text-center p-4">
+                        <div class="option-icon">
+                            <i class="fas fa-file-image"></i>
+                        </div>
+                        <h3 class="card-title mb-3">Depuis Fichier</h3>
+                        <p class="card-text text-muted">
+                            Importez une image de ticket depuis votre ordinateur
+                        </p>
+                        <button type="button" class="btn btn-info btn-lg mt-3">
+                            <i class="fas fa-upload"></i> Importer
+                        </button>
+                    </div>
+                </div>
+                <!-- Comment ça marche -->
+                <div class="card mt-3 border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-info-circle"></i> Comment ça marche ?</h6>
+                    </div>
+                    <div class="card-body">
+                        <ol class="small mb-0">
+                            <li>Sélectionnez une image JPG/PNG</li>
+                            <li>Glissez-déposez ou cliquez pour parcourir</li>
+                            <li>L'image est analysée automatiquement</li>
+                            <li>Les données sont extraites et validées</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Spinner - Analyse en cours -->
+    <div class="modal fade" id="analyzeSpinnerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <h5 class="mb-2">
+                        <i class="fas fa-magic text-primary"></i> Analyse du ticket en cours...
+                    </h5>
+                    <p class="text-muted mb-0">
+                        <small>Veuillez patienter pendant que nous extrayons les informations</small>
+                    </p>
+                    <div class="mt-3">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
+                                 style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Scanner avec Caméra -->
+    <div class="modal fade" id="scanModal" tabindex="-1" aria-labelledby="scanModalLabel">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="scanModalLabel">
+                        <i class="fas fa-camera"></i> Scanner un Ticket
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scanForm" th:action="@{/tickets/scan/upload}" method="post" enctype="multipart/form-data" onsubmit="showAnalyzeSpinner()">
+                        <!-- Champs optionnels -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Magasin (optionnel)</label>
+                                <input type="text" class="form-control" name="store" placeholder="Ex: Carrefour, Lidl...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Notes (optionnel)</label>
+                                <input type="text" class="form-control" name="notes" placeholder="Notes sur ce ticket">
+                            </div>
+                        </div>
+
+                        <!-- Zone de capture/upload -->
+                        <div id="cameraOptions" class="text-center mb-4">
+                            <input type="file" id="fileInput" name="file" accept="image/*" capture="environment" style="display: none;" required>
+
+                            <!-- Bouton pour ouvrir la caméra directement -->
+                            <button type="button" class="btn btn-primary btn-lg mb-3 w-100" onclick="openCamera()">
+                                <i class="fas fa-camera"></i> Ouvrir la Caméra
+                            </button>
+
+                            <!-- Bouton pour choisir une image existante -->
+                            <button type="button" class="btn btn-secondary btn-lg w-100" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-image"></i> Choisir une Image
+                            </button>
+
+                            <!-- Zone drag & drop -->
+                            <div class="upload-area mt-3" id="uploadArea">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-2 text-primary"></i>
+                                <p class="mb-0">ou glissez-déposez votre image ici</p>
+                                <small class="text-muted">Formats: JPG, PNG</small>
+                            </div>
+                        </div>
+
+                        <!-- Zone Webcam (pour desktop) -->
+                        <div id="webcamCapture" style="display: none;">
+                            <div class="text-center mb-3">
+                                <video id="webcamVideo" autoplay playsinline style="max-width: 100%; border-radius: 10px; display: none;"></video>
+                                <canvas id="webcamCanvas" style="display: none;"></canvas>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-success btn-lg" onclick="capturePhoto()">
+                                    <i class="fas fa-camera"></i> Prendre la Photo
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="stopWebcam()">
+                                    <i class="fas fa-times"></i> Annuler
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Aperçu de l'image -->
+                        <div id="preview" style="display: none;">
+                            <div class="text-center mb-3">
+                                <h6>Aperçu :</h6>
+                                <img id="previewImage" src="" alt="Preview" class="img-fluid rounded shadow" style="max-height: 400px;">
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-magic"></i> Analyser le Ticket
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetUpload()">
+                                    <i class="fas fa-times"></i> Changer l'Image
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables globales
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const preview = document.getElementById('preview');
+        const previewImage = document.getElementById('previewImage');
+        const cameraOptions = document.getElementById('cameraOptions');
+        const webcamCapture = document.getElementById('webcamCapture');
+        const webcamVideo = document.getElementById('webcamVideo');
+        const webcamCanvas = document.getElementById('webcamCanvas');
+        let stream = null;
+
+        // Afficher le spinner lors de l'analyse
+        function showAnalyzeSpinner() {
+            // Fermer le modal de scan
+            const scanModal = bootstrap.Modal.getInstance(document.getElementById('scanModal'));
+            if (scanModal) {
+                scanModal.hide();
+            }
+
+            // Afficher le modal spinner
+            const spinnerModal = new bootstrap.Modal(document.getElementById('analyzeSpinnerModal'));
+            spinnerModal.show();
+
+            // Le formulaire continuera sa soumission normale
+            return true;
+        }
+
+        // Détecter si on est sur mobile
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Fonction pour ouvrir la caméra
+        async function openCamera() {
+            if (isMobile()) {
+                // Sur mobile : utiliser l'input file avec capture
+                fileInput.setAttribute('capture', 'environment');
+                fileInput.click();
+            } else {
+                // Sur desktop : utiliser getUserMedia pour la webcam
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        }
+                    });
+
+                    webcamVideo.srcObject = stream;
+                    webcamVideo.style.display = 'block';
+
+                    cameraOptions.style.display = 'none';
+                    webcamCapture.style.display = 'block';
+                } catch (err) {
+                    console.error('Erreur accès webcam:', err);
+                    alert('Impossible d\'accéder à la webcam. Veuillez vérifier les permissions ou choisir une image.');
+                    fileInput.click();
+                }
+            }
+        }
+
+        // Capturer une photo depuis la webcam
+        function capturePhoto() {
+            const context = webcamCanvas.getContext('2d');
+            webcamCanvas.width = webcamVideo.videoWidth;
+            webcamCanvas.height = webcamVideo.videoHeight;
+
+            // Dessiner l'image de la vidéo sur le canvas
+            context.drawImage(webcamVideo, 0, 0);
+
+            // Convertir le canvas en blob puis en file
+            webcamCanvas.toBlob(function(blob) {
+                // Créer un fichier à partir du blob
+                const file = new File([blob], 'ticket_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+
+                // Créer un DataTransfer pour assigner le fichier à l'input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+
+                // Afficher l'aperçu
+                previewImage.src = webcamCanvas.toDataURL('image/jpeg');
+                preview.style.display = 'block';
+                webcamCapture.style.display = 'none';
+
+                // Arrêter la webcam
+                stopWebcam();
+            }, 'image/jpeg', 0.95);
+        }
+
+        // Arrêter la webcam
+        function stopWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            webcamVideo.style.display = 'none';
+            webcamCapture.style.display = 'none';
+            cameraOptions.style.display = 'block';
+        }
+
+        // Gestion de l'upload de fichier depuis l'input
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    preview.style.display = 'block';
+                    cameraOptions.style.display = 'none';
+                    webcamCapture.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(files[0]);
+                fileInput.files = dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Réinitialiser l'upload
+        function resetUpload() {
+            fileInput.value = '';
+            preview.style.display = 'none';
+            cameraOptions.style.display = 'block';
+            webcamCapture.style.display = 'none';
+            previewImage.src = '';
+            stopWebcam();
+        }
+
+        // Réinitialiser quand le modal se ferme
+        document.getElementById('scanModal').addEventListener('hidden.bs.modal', function () {
+            resetUpload();
+        });
+    </script>
+</body>
+</html>
+

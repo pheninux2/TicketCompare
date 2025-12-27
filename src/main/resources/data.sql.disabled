@@ -1,0 +1,56 @@
+-- Insert test tickets
+INSERT INTO tickets (id, date, store, total_amount, notes, created_at) VALUES
+(1, '2024-01-10', 'Carrefour', 45.50, 'Courses hebdomadaires', '2024-01-10'),
+(2, '2024-01-17', 'Lidl', 32.75, 'Courses', '2024-01-17'),
+(3, '2024-01-20', 'Monoprix', 28.90, 'Dépannage', '2024-01-20'),
+(4, '2024-01-25', 'Carrefour', 67.20, 'Grandes courses', '2024-01-25');
+
+-- Insert test products
+INSERT INTO products (id, name, category, price, quantity, unit, ticket_id, total_price) VALUES
+(1, 'Lait Demi-Écrémé', 'Laitier', 1.50, 2, 'L', 1, 3.00),
+(2, 'Pain Complet', 'Boulangerie', 2.50, 1, 'Pièce', 1, 2.50),
+(3, 'Tomates', 'Fruits & Légumes', 3.20, 2, 'kg', 1, 6.40),
+(4, 'Yaourt Nature', 'Laitier', 4.50, 1, 'Pack', 1, 4.50),
+(5, 'Fromage Blanc', 'Laitier', 5.20, 1, 'Pot', 1, 5.20),
+(6, 'Œufs', 'Œufs & Laitier', 3.80, 1, 'Boîte', 1, 3.80),
+(7, 'Beurre', 'Beurre & Margarine', 4.30, 1, 'Plaquette', 1, 4.30),
+(8, 'Crème Fraîche', 'Laitier', 2.90, 1, 'Pot', 1, 2.90),
+(9, 'Riz Blanc', 'Féculents', 2.10, 1, 'kg', 2, 2.10),
+(10, 'Pâtes', 'Féculents', 1.50, 2, 'Paquet', 2, 3.00),
+(11, 'Huile d''Olive', 'Huiles', 6.50, 1, 'L', 2, 6.50),
+(12, 'Sel', 'Condiments', 1.20, 1, 'Boîte', 2, 1.20),
+(13, 'Poivre', 'Condiments', 3.45, 1, 'Boîte', 2, 3.45),
+(14, 'Sucre', 'Sucre', 1.80, 1, 'kg', 2, 1.80),
+(15, 'Café Moulu', 'Boissons', 6.20, 1, 'Paquet', 2, 6.20),
+(16, 'Thé', 'Boissons', 3.50, 1, 'Boîte', 2, 3.50),
+(17, 'Chocolat Noir', 'Confiserie', 2.30, 2, 'Tablette', 3, 4.60),
+(18, 'Biscuits', 'Biscuiterie', 3.10, 1, 'Paquet', 3, 3.10),
+(19, 'Bonbons', 'Confiserie', 2.50, 1, 'Paquet', 3, 2.50),
+(20, 'Gâteau', 'Pâtisserie', 5.50, 1, 'Pièce', 3, 5.50),
+(21, 'Carottes', 'Fruits & Légumes', 1.80, 3, 'kg', 3, 5.40),
+(22, 'Oignons', 'Fruits & Légumes', 1.50, 2, 'kg', 3, 3.00),
+(23, 'Pommes', 'Fruits & Légumes', 2.40, 2, 'kg', 3, 4.80),
+(24, 'Bananes', 'Fruits & Légumes', 1.60, 1.5, 'kg', 4, 2.40),
+(25, 'Raisin', 'Fruits & Légumes', 4.50, 1, 'kg', 4, 4.50),
+(26, 'Orange', 'Fruits & Légumes', 3.20, 2, 'kg', 4, 6.40),
+(27, 'Citron', 'Fruits & Légumes', 0.80, 4, 'Pièce', 4, 3.20),
+(28, 'Viande Hachée', 'Viande', 12.50, 1, 'kg', 4, 12.50),
+(29, 'Poulet Entier', 'Viande', 8.90, 1.5, 'kg', 4, 13.35),
+(30, 'Saumon', 'Poisson', 15.00, 0.5, 'kg', 4, 7.50),
+(31, 'Morue', 'Poisson', 12.00, 0.8, 'kg', 4, 9.60);
+
+-- Insert price history
+INSERT INTO price_history (id, product_name, price, price_date, store, unit, created_at) VALUES
+(1, 'Lait Demi-Écrémé', 1.50, '2024-01-10', 'Carrefour', 'L', '2024-01-10'),
+(2, 'Lait Demi-Écrémé', 1.45, '2024-01-17', 'Lidl', 'L', '2024-01-17'),
+(3, 'Lait Demi-Écrémé', 1.52, '2024-01-20', 'Monoprix', 'L', '2024-01-20'),
+(4, 'Pain Complet', 2.50, '2024-01-10', 'Carrefour', 'Pièce', '2024-01-10'),
+(5, 'Pain Complet', 2.40, '2024-01-17', 'Lidl', 'Pièce', '2024-01-17'),
+(6, 'Pain Complet', 2.70, '2024-01-20', 'Monoprix', 'Pièce', '2024-01-20'),
+(7, 'Tomates', 3.20, '2024-01-10', 'Carrefour', 'kg', '2024-01-10'),
+(8, 'Tomates', 3.50, '2024-01-17', 'Lidl', 'kg', '2024-01-17'),
+(9, 'Tomates', 2.80, '2024-01-20', 'Monoprix', 'kg', '2024-01-20'),
+(10, 'Fromage Blanc', 5.20, '2024-01-10', 'Carrefour', 'Pot', '2024-01-10'),
+(11, 'Fromage Blanc', 4.90, '2024-01-17', 'Lidl', 'Pot', '2024-01-17'),
+(12, 'Fromage Blanc', 5.50, '2024-01-20', 'Monoprix', 'Pot', '2024-01-20');
+

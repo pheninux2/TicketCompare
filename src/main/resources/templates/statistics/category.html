@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques - <span th:text="${category}">Catégorie</span> | ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/tickets">Tickets</a>
+                <a class="nav-link" href="/statistics/dashboard">Statistiques</a>
+                <a class="nav-link" href="/consumption/weekly">Consommation</a>
+                <a class="nav-link" href="/analysis/forecast">Prédictions</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="mb-3">
+                    <i class="bi bi-pie-chart"></i>
+                    Statistiques : <span th:text="${category}" class="text-primary"></span>
+                </h1>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="/statistics/dashboard" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+                </a>
+            </div>
+        </div>
+
+        <div class="row" th:if="${statistic}">
+            <!-- Statistiques principales -->
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted text-uppercase">Nombre de produits</h6>
+                        <p class="card-text h3" th:text="${statistic.productCount}">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted text-uppercase">Prix moyen</h6>
+                        <p class="card-text h3" th:text="${#numbers.formatDecimal(statistic.averagePrice, 1, 2)}">0.00 €</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted text-uppercase">Prix le plus bas</h6>
+                        <p class="card-text h3 text-success" th:text="${#numbers.formatDecimal(statistic.minPrice, 1, 2)}">0.00 €</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted text-uppercase">Prix le plus haut</h6>
+                        <p class="card-text h3 text-danger" th:text="${#numbers.formatDecimal(statistic.maxPrice, 1, 2)}">0.00 €</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si pas de données -->
+        <div class="alert alert-info" th:unless="${statistic}">
+            <i class="bi bi-info-circle"></i>
+            Aucune donnée statistique disponible pour cette catégorie.
+        </div>
+
+        <!-- Graphique -->
+        <div class="row mt-4" th:if="${statistic}">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart-fill"></i>
+                            Distribution des prix par produit
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="height: 500px; position: relative;">
+                            <canvas id="priceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des produits -->
+        <div class="row mt-4" th:if="${products != null && !products.isEmpty()}">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul"></i>
+                            Liste des produits dans cette catégorie
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="bi bi-box"></i> Produit</th>
+                                        <th class="text-end"><i class="bi bi-arrow-down-circle text-success"></i> Prix Min</th>
+                                        <th class="text-end"><i class="bi bi-calculator"></i> Prix Moyen</th>
+                                        <th class="text-end"><i class="bi bi-arrow-up-circle text-danger"></i> Prix Max</th>
+                                        <th class="text-center"><i class="bi bi-cart"></i> Observations</th>
+                                        <th class="text-center"><i class="bi bi-calendar-check"></i> Premier Achat</th>
+                                        <th class="text-center"><i class="bi bi-calendar"></i> Dernier Achat</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="product : ${products}">
+                                        <td>
+                                            <strong th:text="${product.name}"></strong>
+                                        </td>
+                                        <td class="text-end text-success">
+                                            <strong th:text="${'€' + #numbers.formatDecimal(product.minPrice, 1, 2)}"></strong>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="badge bg-primary" th:text="${'€' + #numbers.formatDecimal(product.avgPrice, 1, 2)}"></span>
+                                        </td>
+                                        <td class="text-end text-danger">
+                                            <strong th:text="${'€' + #numbers.formatDecimal(product.maxPrice, 1, 2)}"></strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary" th:text="${product.count}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="text-muted" th:text="${product.firstPurchase != null ? #temporals.format(product.firstPurchase, 'dd/MM/yyyy') : '-'}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info text-dark" th:text="${product.lastPurchase != null ? #temporals.format(product.lastPurchase, 'dd/MM/yyyy') : '-'}"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('priceChart');
+            if (ctx) {
+                // Récupérer les données Thymeleaf
+                /*<![CDATA[*/
+                const products = /*[[${products}]]*/ [];
+                /*]]>*/
+
+                if (products && products.length > 0) {
+                    // Limiter à 15 produits pour la lisibilité
+                    const displayProducts = products.slice(0, 15);
+
+                    const labels = displayProducts.map(p => p.name);
+                    const avgPrices = displayProducts.map(p => p.avgPrice);
+                    const minPrices = displayProducts.map(p => p.minPrice);
+                    const maxPrices = displayProducts.map(p => p.maxPrice);
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Prix Moyen (€)',
+                                    data: avgPrices,
+                                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 2
+                                },
+                                {
+                                    label: 'Prix Min (€)',
+                                    data: minPrices,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 2
+                                },
+                                {
+                                    label: 'Prix Max (€)',
+                                    data: maxPrices,
+                                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 2
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Prix des produits (Top 15)',
+                                    font: {
+                                        size: 16
+                                    }
+                                },
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            label += '€' + context.parsed.y.toFixed(2);
+                                            return label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '€' + value.toFixed(2);
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Prix (€)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 45
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // Afficher un message si pas de données
+                    ctx.parentElement.innerHTML = '<div class="alert alert-info text-center"><i class="bi bi-info-circle"></i> Aucune donnée disponible pour générer le graphique.</div>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

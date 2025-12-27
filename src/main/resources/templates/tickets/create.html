@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Ticket - ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="fas fa-plus-circle"></i> Créer un Nouveau Ticket</h2>
+                <p class="text-muted">Ajoutez un ticket de caisse et ses produits</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="/tickets" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-receipt"></i> Informations du Ticket</h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/tickets}" method="post" id="ticketForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date du ticket *</label>
+                            <input type="date" class="form-control" name="date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Magasin *</label>
+                            <input type="text" class="form-control" name="store" placeholder="Ex: Carrefour, Lidl, Auchan..." required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Montant Total €*</label>
+                            <input type="number" class="form-control" name="totalAmount" id="totalAmount" step="0.01" readonly>
+                            <small class="text-muted">Calculé automatiquement à partir des produits</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Notes (optionnel)</label>
+                            <input type="text" class="form-control" name="notes" placeholder="Notes sur ce ticket">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h4 class="mb-3"><i class="fas fa-box"></i> Produits</h4>
+                    <div id="productsContainer">
+                        <!-- Les produits seront ajoutés ici -->
+                        <div class="product-item card mb-3 p-3" data-index="0">
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <label class="form-label">Nom du produit *</label>
+                                    <input type="text" class="form-control" name="products[0].name" placeholder="Nom du produit" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Quantité *</label>
+                                    <input type="number" class="form-control product-quantity" name="products[0].quantity" step="0.01" placeholder="1" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Unité</label>
+                                    <select class="form-select" name="products[0].unit">
+                                        <option value="u">unité</option>
+                                        <option value="kg">kg</option>
+                                        <option value="g">g</option>
+                                        <option value="L">L</option>
+                                        <option value="ml">ml</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Prix unitaire € *</label>
+                                    <input type="number" class="form-control product-price" name="products[0].price" step="0.01" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Catégorie</label>
+                                    <select class="form-select" name="products[0].category">
+                                        <option value="Autre">Autre</option>
+                                        <option value="Fruits et Légumes">Fruits et Légumes</option>
+                                        <option value="Viande et Poisson">Viande et Poisson</option>
+                                        <option value="Produits Laitiers">Produits Laitiers</option>
+                                        <option value="Pain et Pâtisserie">Pain et Pâtisserie</option>
+                                        <option value="Épicerie">Épicerie</option>
+                                        <option value="Boissons">Boissons</option>
+                                        <option value="Surgelés">Surgelés</option>
+                                        <option value="Hygiène et Beauté">Hygiène et Beauté</option>
+                                        <option value="Entretien">Entretien</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeProduct(0)" disabled>
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <button type="button" class="btn btn-outline-primary" onclick="addProduct()">
+                            <i class="fas fa-plus"></i> Ajouter un produit
+                        </button>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/tickets" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save"></i> Enregistrer le Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let productIndex = 1;
+
+        function addProduct() {
+            const container = document.getElementById('productsContainer');
+            const productHtml = `
+                <div class="product-item card mb-3 p-3" data-index="${productIndex}">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Nom du produit *</label>
+                            <input type="text" class="form-control" name="products[${productIndex}].name" placeholder="Nom du produit" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Quantité *</label>
+                            <input type="number" class="form-control product-quantity" name="products[${productIndex}].quantity" step="0.01" placeholder="1" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Unité</label>
+                            <select class="form-select" name="products[${productIndex}].unit">
+                                <option value="u">unité</option>
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="L">L</option>
+                                <option value="ml">ml</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Prix unitaire € *</label>
+                            <input type="number" class="form-control product-price" name="products[${productIndex}].price" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Catégorie</label>
+                            <select class="form-select" name="products[${productIndex}].category">
+                                <option value="Autre">Autre</option>
+                                <option value="Fruits et Légumes">Fruits et Légumes</option>
+                                <option value="Viande et Poisson">Viande et Poisson</option>
+                                <option value="Produits Laitiers">Produits Laitiers</option>
+                                <option value="Pain et Pâtisserie">Pain et Pâtisserie</option>
+                                <option value="Épicerie">Épicerie</option>
+                                <option value="Boissons">Boissons</option>
+                                <option value="Surgelés">Surgelés</option>
+                                <option value="Hygiène et Beauté">Hygiène et Beauté</option>
+                                <option value="Entretien">Entretien</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeProduct(${productIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', productHtml);
+            productIndex++;
+            updateDeleteButtons();
+            calculateTotal();
+        }
+
+        function removeProduct(index) {
+            const product = document.querySelector(`.product-item[data-index="${index}"]`);
+            if (product) {
+                product.remove();
+                updateDeleteButtons();
+                calculateTotal();
+            }
+        }
+
+        function updateDeleteButtons() {
+            const products = document.querySelectorAll('.product-item');
+            products.forEach((product, index) => {
+                const deleteBtn = product.querySelector('button[onclick^="removeProduct"]');
+                if (products.length === 1) {
+                    deleteBtn.disabled = true;
+                } else {
+                    deleteBtn.disabled = false;
+                }
+            });
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            const quantities = document.querySelectorAll('.product-quantity');
+            const prices = document.querySelectorAll('.product-price');
+
+            quantities.forEach((quantityInput, index) => {
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const price = parseFloat(prices[index].value) || 0;
+                total += quantity * price;
+            });
+
+            document.getElementById('totalAmount').value = total.toFixed(2);
+        }
+
+        // Calculer le total à chaque changement
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('product-quantity') || e.target.classList.contains('product-price')) {
+                calculateTotal();
+            }
+        });
+
+        // Calculer au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateTotal();
+        });
+    </script>
+</body>
+</html>
+

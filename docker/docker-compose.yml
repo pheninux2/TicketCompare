@@ -1,0 +1,136 @@
+
+services:
+  # ===================================
+  # Base de données PostgreSQL
+  # ===================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: ticketcompare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ticketcompare}
+      POSTGRES_USER: ${POSTGRES_USER:-ticketuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-TicketPass2024!}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=fr_FR.UTF-8"
+      TZ: Europe/Paris
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - ticketcompare-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ticketuser} -d ${POSTGRES_DB:-ticketcompare}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ===================================
+  # Application Spring Boot - TicketCompare
+  # ===================================
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ticketcompare-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Spring Configuration
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      SERVER_PORT: 8080
+
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-ticketcompare}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-ticketuser}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-TicketPass2024!}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+      # JPA Configuration
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+      SPRING_JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+
+      # File Upload Configuration
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10MB}
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: ${MAX_REQUEST_SIZE:-10MB}
+
+      # Tesseract OCR
+      TESSERACT_PATH: /usr/bin/tesseract
+      TESSERACT_DATAPATH: /usr/share/tessdata
+
+      # JVM Options
+      JAVA_OPTS: ${JAVA_OPTS:--Xmx512m -Xms256m}
+
+      # Timezone
+      TZ: Europe/Paris
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    networks:
+      - ticketcompare-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ===================================
+  # pgAdmin - Interface de gestion PostgreSQL (optionnel)
+  # ===================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ticketcompare-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@ticketcompare.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-AdminPass2024!}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - ticketcompare-network
+    depends_on:
+      - postgres
+    profiles:
+      - admin  # Utiliser avec: docker-compose --profile admin up
+
+# ===================================
+# Volumes persistants
+# ===================================
+volumes:
+  postgres_data:
+    driver: local
+    name: ticketcompare_postgres_data
+
+  app_uploads:
+    driver: local
+    name: ticketcompare_uploads
+
+  app_logs:
+    driver: local
+    name: ticketcompare_logs
+
+  pgadmin_data:
+    driver: local
+    name: ticketcompare_pgadmin
+
+# ===================================
+# Réseau
+# ===================================
+networks:
+  ticketcompare-network:
+    driver: bridge
+    name: ticketcompare_network
+

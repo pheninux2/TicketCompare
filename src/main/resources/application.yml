@@ -1,0 +1,102 @@
+# ===================================
+# Configuration TicketCompare
+# Profil par défaut (développement local avec H2)
+# ===================================
+
+spring:
+  application:
+    name: TicketCompare
+
+  # ===================================
+  # Base de données H2 (Développement)
+  # ===================================
+  datasource:
+    url: jdbc:h2:mem:ticketcomparedb;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # ===================================
+  # JPA / Hibernate
+  # ===================================
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        enable_lazy_load_no_trans: true
+
+  sql:
+    init:
+      mode: never
+      # Désactiver complètement l'import automatique
+      # car import.sql cause des erreurs de syntaxe avec H2
+
+  # ===================================
+  # Thymeleaf
+  # ===================================
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+
+  # ===================================
+  # Upload de fichiers
+  # ===================================
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+      file-size-threshold: 2KB
+
+# ===================================
+# Serveur
+# ===================================
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# ===================================
+# Actuator (Health checks)
+# ===================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ===================================
+# Tesseract OCR
+# ===================================
+tesseract:
+  ocr:
+    language: fra
+    datapath: ${TESSDATA_PREFIX:/usr/share/tessdata}
+
+# ===================================
+# Logging
+# ===================================
+logging:
+  level:
+    root: INFO
+    pheninux.xdev.ticketcompare: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
