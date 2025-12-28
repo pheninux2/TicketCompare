@@ -72,3 +72,70 @@ CREATE TABLE IF NOT EXISTS statistic_snapshots (
     CONSTRAINT idx_snapshot_date UNIQUE (id, snapshot_date)
 );
 
+-- ============================================
+-- SYSTÈME DE GESTION DES LICENCES
+-- ============================================
+
+-- Table des Utilisateurs
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    full_name VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TIMESTAMP,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    verification_token VARCHAR(255) UNIQUE,
+    verification_token_expiry TIMESTAMP,
+    CONSTRAINT idx_user_email UNIQUE (id, email)
+);
+
+-- Table des Licences
+CREATE TABLE IF NOT EXISTS licenses (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL UNIQUE,
+    license_type VARCHAR(20) NOT NULL,
+    license_key VARCHAR(100) NOT NULL UNIQUE,
+    start_date DATE NOT NULL,
+    expiry_date DATE,
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    auto_renew BOOLEAN NOT NULL DEFAULT FALSE,
+    notes VARCHAR(500),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT idx_license_user UNIQUE (id, user_id),
+    CONSTRAINT idx_license_key UNIQUE (id, license_key)
+);
+
+-- Index pour optimiser les recherches de licences
+CREATE INDEX IF NOT EXISTS idx_license_status ON licenses(status);
+CREATE INDEX IF NOT EXISTS idx_license_expiry ON licenses(expiry_date);
+CREATE INDEX IF NOT EXISTS idx_license_type ON licenses(license_type);
+
+-- Table des Abonnements (Subscriptions)
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    plan_type VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    start_date DATE NOT NULL,
+    next_billing_date DATE,
+    end_date DATE,
+    auto_renew BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    payment_method VARCHAR(100),
+    payment_reference VARCHAR(200),
+    notes VARCHAR(500),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT idx_subscription_user UNIQUE (id, user_id)
+);
+
+-- Index pour optimiser les recherches d'abonnements
+CREATE INDEX IF NOT EXISTS idx_subscription_status ON subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_subscription_billing ON subscriptions(next_billing_date);
+CREATE INDEX IF NOT EXISTS idx_subscription_user_status ON subscriptions(user_id, status);
+

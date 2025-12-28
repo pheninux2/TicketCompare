@@ -12,6 +12,10 @@ import pheninux.xdev.ticketcompare.service.StatisticService;
 public class StatisticController {
     private final StatisticService statisticService;
 
+    /**
+     * Dashboard des statistiques (accessible via /statistics/dashboard)
+     * Note: Le dashboard principal utilisateur est dans DashboardController (/dashboard)
+     */
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("categories", statisticService.getAllCategoriesStatistics());

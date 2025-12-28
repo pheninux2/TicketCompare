@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarifs - ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+        .pricing-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+        .pricing-card {
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            border: 3px solid transparent;
+        }
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .pricing-card.recommended {
+            border-color: #ffc107;
+            transform: scale(1.05);
+        }
+        .recommended-badge {
+            background: #ffc107;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .plan-price {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .plan-period {
+            color: #999;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list i {
+            color: #28a745;
+            margin-right: 10px;
+        }
+        .btn-select-plan {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .btn-select-plan:hover {
+            transform: translateY(-2px);
+        }
+        .current-plan-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="pricing-header">
+        <div class="container">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-tag"></i> Choisissez votre plan
+            </h1>
+            <p class="lead">Profitez de toutes les fonctionnalités de ReceiptIQ</p>
+            <div th:if="${currentUser != null && isOnTrial}" class="alert alert-warning d-inline-block mt-3">
+                <i class="fas fa-clock"></i>
+                Vous avez encore <strong th:text="${daysRemaining}"></strong> jours d'essai gratuit
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="container py-5">
+        <div class="row g-4">
+            <!-- Plan Mensuel -->
+            <div class="col-md-4">
+                <div class="card pricing-card">
+                    <div class="card-body text-center p-4" style="position: relative;">
+                        <h3 class="mb-4">
+                            <i class="fas fa-calendar-alt text-primary"></i> Mensuel
+                        </h3>
+                        <div class="plan-price">
+                            4,99€
+                        </div>
+                        <div class="plan-period mb-4">par mois</div>
+
+                        <ul class="feature-list text-start mb-4">
+                            <li><i class="fas fa-check"></i> Scan illimité de tickets</li>
+                            <li><i class="fas fa-check"></i> Analyse des dépenses</li>
+                            <li><i class="fas fa-check"></i> Statistiques avancées</li>
+                            <li><i class="fas fa-check"></i> Export des données</li>
+                            <li><i class="fas fa-check"></i> Support par email</li>
+                        </ul>
+
+                        <form th:action="@{/pricing/select}" method="post">
+                            <input type="hidden" name="planType" value="MONTHLY" />
+                            <button type="submit" class="btn btn-select-plan btn-primary w-100">
+                                <i class="fas fa-shopping-cart"></i> Choisir ce plan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan Annuel (Recommandé) -->
+            <div class="col-md-4">
+                <div class="card pricing-card recommended">
+                    <div class="card-body text-center p-4" style="position: relative;">
+                        <span class="recommended-badge">
+                            <i class="fas fa-star"></i> RECOMMANDÉ
+                        </span>
+
+                        <h3 class="mb-4 mt-3">
+                            <i class="fas fa-calendar-check text-success"></i> Annuel
+                        </h3>
+                        <div class="plan-price">
+                            49,99€
+                        </div>
+                        <div class="plan-period mb-2">par an</div>
+                        <div class="text-success fw-bold mb-4">
+                            <i class="fas fa-piggy-bank"></i> Économisez 17%
+                        </div>
+
+                        <ul class="feature-list text-start mb-4">
+                            <li><i class="fas fa-check"></i> Scan illimité de tickets</li>
+                            <li><i class="fas fa-check"></i> Analyse des dépenses</li>
+                            <li><i class="fas fa-check"></i> Statistiques avancées</li>
+                            <li><i class="fas fa-check"></i> Export des données</li>
+                            <li><i class="fas fa-check"></i> Support prioritaire</li>
+                            <li><i class="fas fa-check"></i> Mises à jour gratuites</li>
+                        </ul>
+
+                        <form th:action="@{/pricing/select}" method="post">
+                            <input type="hidden" name="planType" value="YEARLY" />
+                            <button type="submit" class="btn btn-select-plan btn-primary w-100">
+                                <i class="fas fa-shopping-cart"></i> Choisir ce plan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan À Vie -->
+            <div class="col-md-4">
+                <div class="card pricing-card">
+                    <div class="card-body text-center p-4" style="position: relative;">
+                        <h3 class="mb-4">
+                            <i class="fas fa-infinity text-warning"></i> À Vie
+                        </h3>
+                        <div class="plan-price">
+                            149,99€
+                        </div>
+                        <div class="plan-period mb-4">paiement unique</div>
+
+                        <ul class="feature-list text-start mb-4">
+                            <li><i class="fas fa-check"></i> Scan illimité de tickets</li>
+                            <li><i class="fas fa-check"></i> Analyse des dépenses</li>
+                            <li><i class="fas fa-check"></i> Statistiques avancées</li>
+                            <li><i class="fas fa-check"></i> Export des données</li>
+                            <li><i class="fas fa-check"></i> Support prioritaire VIP</li>
+                            <li><i class="fas fa-check"></i> Mises à jour à vie</li>
+                            <li><i class="fas fa-check"></i> Accès anticipé aux nouvelles fonctionnalités</li>
+                        </ul>
+
+                        <form th:action="@{/pricing/select}" method="post">
+                            <input type="hidden" name="planType" value="LIFETIME" />
+                            <button type="submit" class="btn btn-select-plan btn-primary w-100">
+                                <i class="fas fa-shopping-cart"></i> Choisir ce plan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Questions fréquentes</h2>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                Comment fonctionne l'essai gratuit ?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Vous bénéficiez de 30 jours d'essai gratuit dès votre inscription. Aucune carte bancaire n'est requise pour commencer.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Puis-je annuler à tout moment ?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Oui, vous pouvez annuler votre abonnement à tout moment depuis votre compte. Vous continuerez à avoir accès jusqu'à la fin de votre période payée.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Quels modes de paiement acceptez-vous ?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Nous acceptons toutes les cartes bancaires (Visa, Mastercard, American Express) via Stripe, ainsi que PayPal.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Footer -->
+        <div class="text-center mt-5">
+            <p class="text-muted">
+                Besoin d'aide pour choisir ? <a href="mailto:support@receiptiq.com">Contactez-nous</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

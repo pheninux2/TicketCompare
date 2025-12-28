@@ -14,14 +14,9 @@ public class HomeController {
 
     @GetMapping
     public String index(Model model) {
-        return "index";
-    }
-
-    @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-        // Add dashboard statistics
+        // Add recent tickets to homepage
         model.addAttribute("recentTickets", ticketService.getAllTickets(0, 5));
-        return "dashboard";
+        return "index";
     }
 }
 

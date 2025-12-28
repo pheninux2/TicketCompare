@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement - ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .checkout-container {
+            max-width: 900px;
+            margin: 50px auto;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .plan-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+        }
+        .StripeElement {
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+        }
+        .StripeElement--focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .StripeElement--invalid {
+            border-color: #dc3545;
+        }
+        #payment-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .security-badge {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container checkout-container">
+        <div class="text-center mb-4">
+            <h1><i class="fas fa-shopping-cart"></i> Finaliser votre commande</h1>
+            <p class="text-muted">Paiement 100% sécurisé</p>
+        </div>
+
+        <div class="row">
+            <!-- Résumé de la commande -->
+            <div class="col-md-5 mb-4">
+                <div class="plan-summary">
+                    <h3 class="mb-4"><i class="fas fa-receipt"></i> Récapitulatif</h3>
+
+                    <div class="mb-3">
+                        <h5 th:text="${plan.displayName}">Plan Mensuel</h5>
+                        <p th:text="${plan.description}">Description du plan</p>
+                    </div>
+
+                    <hr style="border-color: rgba(255,255,255,0.3);">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Plan :</span>
+                        <strong th:text="${plan.displayName}">Mensuel</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Période :</span>
+                        <strong th:text="${plan.validityDays == -1} ? 'Illimité' : ${plan.validityDays} + ' jours'">30 jours</strong>
+                    </div>
+
+                    <hr style="border-color: rgba(255,255,255,0.3);">
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <h4>Total :</h4>
+                        <h4 th:text="${plan.price} + '€'">4,99€</h4>
+                    </div>
+
+                    <div class="text-center">
+                        <small><i class="fas fa-shield-alt"></i> Paiement sécurisé SSL</small>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h6><i class="fas fa-check-circle text-success"></i> Inclus :</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Scan illimité</li>
+                        <li><i class="fas fa-check text-success"></i> Analyses avancées</li>
+                        <li><i class="fas fa-check text-success"></i> Support technique</li>
+                        <li><i class="fas fa-check text-success"></i> Mises à jour</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Formulaire de paiement -->
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h4 class="mb-4"><i class="fas fa-credit-card"></i> Informations de paiement</h4>
+
+                        <form id="payment-form">
+                            <!-- Nom du titulaire -->
+                            <div class="mb-3">
+                                <label class="form-label">Nom du titulaire</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="cardholder-name"
+                                       th:value="${user.fullName}"
+                                       required>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email"
+                                       class="form-control"
+                                       id="email"
+                                       th:value="${user.email}"
+                                       required>
+                            </div>
+
+                            <!-- Carte bancaire (Stripe Elements) -->
+                            <div class="mb-3">
+                                <label class="form-label">Numéro de carte</label>
+                                <div id="card-element"></div>
+                                <div id="card-errors" class="text-danger mt-2"></div>
+                            </div>
+
+                            <!-- Bouton de paiement -->
+                            <button type="submit" id="payment-button" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-lock"></i> Payer <span th:text="${plan.price} + '€'">4,99€</span>
+                            </button>
+
+                            <div class="text-center text-muted small">
+                                En cliquant sur "Payer", vous acceptez nos
+                                <a href="#">conditions d'utilisation</a>
+                            </div>
+                        </form>
+
+                        <!-- Autres moyens de paiement -->
+                        <div class="mt-4">
+                            <div class="text-center mb-3">
+                                <span class="text-muted">─── OU ───</span>
+                            </div>
+
+                            <button type="button" id="paypal-button" class="btn btn-warning w-100">
+                                <i class="fab fa-paypal"></i> Payer avec PayPal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badges de sécurité -->
+                <div class="security-badges">
+                    <div class="security-badge">
+                        <i class="fas fa-lock"></i> SSL Sécurisé
+                    </div>
+                    <div class="security-badge">
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-cc-amex"></i>
+                    </div>
+                    <div class="security-badge">
+                        <i class="fab fa-stripe"></i> Powered by Stripe
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration Stripe
+        const stripe = Stripe('pk_test_YOUR_PUBLIC_KEY'); // À remplacer par votre clé publique
+        const elements = stripe.elements();
+
+        const cardElement = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#32325d',
+                    fontFamily: '"Segoe UI", sans-serif',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#dc3545'
+                }
+            }
+        });
+
+        cardElement.mount('#card-element');
+
+        // Gestion des erreurs
+        cardElement.on('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // Soumission du formulaire
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const button = document.getElementById('payment-button');
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+
+            const {token, error} = await stripe.createToken(cardElement);
+
+            if (error) {
+                document.getElementById('card-errors').textContent = error.message;
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-lock"></i> Payer [[${plan.price}]]€';
+            } else {
+                // Envoyer le token au serveur
+                await processPayment(token.id);
+            }
+        });
+
+        async function processPayment(token) {
+            try {
+                const response = await fetch('/payment/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        email: document.getElementById('email').value
+                    })
+                });
+
+                if (response.ok) {
+                    window.location.href = '/payment/success';
+                } else {
+                    alert('Erreur lors du paiement. Veuillez réessayer.');
+                    document.getElementById('payment-button').disabled = false;
+                    document.getElementById('payment-button').innerHTML = '<i class="fas fa-lock"></i> Payer [[${plan.price}]]€';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors du paiement. Veuillez réessayer.');
+            }
+        }
+
+        // PayPal
+        document.getElementById('paypal-button').addEventListener('click', function() {
+            alert('Intégration PayPal à venir');
+            // TODO: Intégrer PayPal SDK
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - ReceiptIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 60px;
+            max-width: 450px;
+            width: 100%;
+            margin: 20px;
+        }
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-title h1 {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-title">
+            <h1><i class="fas fa-receipt"></i></h1>
+            <h2>ReceiptIQ</h2>
+            <p class="text-muted">Connectez-vous à votre compte</p>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${message}" class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle"></i> <span th:text="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <form th:action="@{/auth/login}" th:object="${loginDTO}" method="post">
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="email"
+                       class="form-control form-control-lg"
+                       id="email"
+                       th:field="*{email}"
+                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
+                       placeholder="votre@email.com"
+                       autofocus
+                       required>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="mb-3">
+                <label for="password" class="form-label">
+                    <i class="fas fa-lock"></i> Mot de passe
+                </label>
+                <input type="password"
+                       class="form-control form-control-lg"
+                       id="password"
+                       th:field="*{password}"
+                       th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''"
+                       placeholder="••••••••"
+                       required>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            </div>
+
+            <!-- Remember me & Forgot password -->
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe" th:field="*{rememberMe}">
+                    <label class="form-check-label" for="rememberMe">
+                        Se souvenir de moi
+                    </label>
+                </div>
+                <a th:href="@{/auth/forgot-password}" class="text-decoration-none">
+                    Mot de passe oublié ?
+                </a>
+            </div>
+
+            <!-- Bouton connexion -->
+            <button type="submit" class="btn btn-login btn-primary w-100 mb-3">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
+
+            <div class="divider">
+                <span>OU</span>
+            </div>
+
+            <!-- Lien inscription -->
+            <a th:href="@{/auth/register}" class="btn btn-outline-primary w-100">
+                <i class="fas fa-user-plus"></i> Créer un compte
+            </a>
+        </form>
+
+        <div class="text-center mt-4">
+            <small class="text-muted">
+                <i class="fas fa-gift"></i> 30 jours d'essai gratuit à l'inscription
+            </small>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
