@@ -6,6 +6,103 @@
 </head>
 <body>
 
+<!-- Fragment Navbar -->
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-shopping-cart"></i>
+            <strong>ShopTracker</strong> 🛒
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">
+                        <i class="fas fa-home"></i> Accueil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/tickets">
+                        <i class="fas fa-receipt"></i> Tickets
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/statistics/dashboard">
+                        <i class="fas fa-chart-bar"></i> Statistiques
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/consumption/weekly">
+                        <i class="fas fa-shopping-basket"></i> Consommation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/compare">
+                        <i class="fas fa-balance-scale"></i> Comparaison
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-crystal-ball"></i> Prédictions
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/analysis/forecast">📈 Prix</a></li>
+                        <li><a class="dropdown-item" href="/analysis/consumption-forecast">🛒 Consommation</a></li>
+                        <li><a class="dropdown-item" href="/analysis/smart-shopping-list">🎯 Liste Intelligente</a></li>
+                    </ul>
+                </li>
+
+                <!-- Section utilisateur -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span th:if="${session.user != null}" th:text="${session.user.fullName}">Mon Compte</span>
+                        <span th:unless="${session.user != null}">Mon Compte</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <!-- Si connecté -->
+                        <li th:if="${session.user != null}">
+                            <a class="dropdown-item" href="/dashboard">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li th:if="${session.user != null}">
+                            <a class="dropdown-item" href="/license">
+                                <i class="fas fa-key"></i> Ma Licence
+                            </a>
+                        </li>
+                        <li th:if="${session.user != null}">
+                            <a class="dropdown-item" href="/pricing">
+                                <i class="fas fa-tags"></i> Tarifs
+                            </a>
+                        </li>
+                        <li th:if="${session.user != null}"><hr class="dropdown-divider"></li>
+                        <li th:if="${session.user != null}">
+                            <a class="dropdown-item text-danger" href="/auth/logout">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </a>
+                        </li>
+
+                        <!-- Si non connecté -->
+                        <li th:unless="${session.user != null}">
+                            <a class="dropdown-item" href="/auth/login">
+                                <i class="fas fa-sign-in-alt"></i> Connexion
+                            </a>
+                        </li>
+                        <li th:unless="${session.user != null}">
+                            <a class="dropdown-item" href="/auth/register">
+                                <i class="fas fa-user-plus"></i> Inscription
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
 <!-- Fragment Footer -->
 <footer th:fragment="footer" class="footer bg-gradient-primary text-white py-4 mt-auto">
     <div class="container">
@@ -28,7 +125,8 @@
                 <p class="mb-1">
                     <i class="fas fa-copyright"></i>
                     <span th:text="${#temporals.year(#temporals.createNow())}">2025</span>
-                    <strong>ReceiptIQ</strong> 🧠
+                    <i class="fas fa-shopping-cart"></i>
+                    <strong>ShopTracker</strong> 🛒
                 </p>
                 <p class="mb-0 small">Tous droits réservés</p>
             </div>

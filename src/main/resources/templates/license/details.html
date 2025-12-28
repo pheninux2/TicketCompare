@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Licence - ShopTracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .license-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .license-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .badge-trial { background-color: #17a2b8; }
+        .badge-monthly { background-color: #28a745; }
+        .badge-yearly { background-color: #007bff; }
+        .badge-lifetime { background-color: #ffc107; color: #000; }
+        .badge-expired { background-color: #dc3545; }
+        .status-active { color: #28a745; }
+        .status-expiring { color: #ffc107; }
+        .status-expired { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/layout :: navbar}"></div>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="mb-4">
+                    <i class="fas fa-key"></i> Ma Licence
+                </h1>
+
+                <!-- Carte de licence -->
+                <div class="license-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-3">
+                                <span th:text="${user.fullName}">Utilisateur</span>
+                            </h3>
+                            <p class="mb-2">
+                                <i class="fas fa-envelope"></i>
+                                <span th:text="${user.email}">email@example.com</span>
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-calendar-alt"></i>
+                                Membre depuis le
+                                <span th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}">01/01/2025</span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="license-badge"
+                                 th:classappend="${license.licenseType.name() == 'TRIAL' ? 'badge-trial' :
+                                                  license.licenseType.name() == 'MONTHLY' ? 'badge-monthly' :
+                                                  license.licenseType.name() == 'YEARLY' ? 'badge-yearly' :
+                                                  'badge-lifetime'}">
+                                <span th:text="${license.licenseType.displayName}">Plan</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statut de la licence -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-info-circle"></i> Statut de la licence
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1 text-muted">Statut</p>
+                                <h4 th:if="${isActive}" class="status-active">
+                                    <i class="fas fa-check-circle"></i> Active
+                                </h4>
+                                <h4 th:if="${isExpired}" class="status-expired">
+                                    <i class="fas fa-times-circle"></i> Expirée
+                                </h4>
+                            </div>
+
+                            <div class="col-md-6 mb-3" th:if="${license.licenseType.name() != 'LIFETIME'}">
+                                <p class="mb-1 text-muted">Jours restants</p>
+                                <h4 th:classappend="${isExpiringSoon ? 'status-expiring' : 'status-active'}">
+                                    <i class="fas fa-clock"></i>
+                                    <span th:text="${daysRemaining}">30</span> jours
+                                </h4>
+                            </div>
+
+                            <div class="col-md-6 mb-3" th:if="${license.licenseType.name() == 'LIFETIME'}">
+                                <p class="mb-1 text-muted">Validité</p>
+                                <h4 class="status-active">
+                                    <i class="fas fa-infinity"></i> Illimitée
+                                </h4>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1 text-muted">Clé de licence</p>
+                                <p class="font-monospace">
+                                    <small th:text="${license.licenseKey}">XXXX-XXXX-XXXX-XXXX</small>
+                                </p>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1 text-muted">Date de début</p>
+                                <p th:text="${#temporals.format(license.startDate, 'dd/MM/yyyy')}">01/01/2025</p>
+                            </div>
+
+                            <div class="col-md-6 mb-3" th:if="${license.expiryDate != null}">
+                                <p class="mb-1 text-muted">Date d'expiration</p>
+                                <p th:text="${#temporals.format(license.expiryDate, 'dd/MM/yyyy')}">31/01/2025</p>
+                            </div>
+                        </div>
+
+                        <!-- Alerte si expiration proche -->
+                        <div th:if="${isExpiringSoon and isActive}" class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Attention !</strong> Votre licence expire dans
+                            <span th:text="${daysRemaining}">7</span> jours.
+                            <a href="/pricing" class="alert-link">Renouvelez maintenant</a> pour continuer à profiter de ShopTracker.
+                        </div>
+
+                        <!-- Alerte si expiré -->
+                        <div th:if="${isExpired}" class="alert alert-danger mt-3">
+                            <i class="fas fa-times-circle"></i>
+                            <strong>Licence expirée !</strong>
+                            <a href="/pricing" class="alert-link">Renouvelez votre licence</a> pour continuer à utiliser ShopTracker.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-cog"></i> Actions
+                        </h5>
+
+                        <div class="d-grid gap-2">
+                            <a href="/dashboard" class="btn btn-primary">
+                                <i class="fas fa-tachometer-alt"></i> Retour au Dashboard
+                            </a>
+
+                            <a href="/pricing" class="btn btn-success" th:if="${license.licenseType.name() == 'TRIAL'}">
+                                <i class="fas fa-upgrade"></i> Passer à un plan payant
+                            </a>
+
+                            <a href="/pricing" class="btn btn-outline-primary" th:if="${license.licenseType.name() != 'LIFETIME'}">
+                                <i class="fas fa-sync-alt"></i> Renouveler ma licence
+                            </a>
+
+                            <button class="btn btn-outline-danger" disabled>
+                                <i class="fas fa-times"></i> Annuler ma licence
+                            </button>
+                        </div>
+
+                        <p class="text-muted mt-3 mb-0 small">
+                            <i class="fas fa-question-circle"></i>
+                            Besoin d'aide ? Contactez-nous à
+                            <a href="mailto:adil.haddad.xdev@gmail.com">adil.haddad.xdev@gmail.com</a>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

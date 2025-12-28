@@ -1,4 +1,4 @@
-# 🎫 SYSTÈME DE GESTION DES LICENCES - ReceiptIQ
+# 🎫 SYSTÈME DE GESTION DES LICENCES - ShopTracker
 
 ## Date : 28 Décembre 2025
 
@@ -6,7 +6,7 @@
 
 ## 📋 VUE D'ENSEMBLE
 
-Système complet de gestion des licences implémenté pour ReceiptIQ avec :
+Système complet de gestion des licences implémenté pour ShopTracker avec :
 - ✅ **Période d'essai gratuite de 30 jours**
 - ✅ **Abonnement mensuel (4,99€/mois)**
 - ✅ **Abonnement annuel (49,99€/an) - Économie de 17%**
@@ -79,7 +79,7 @@ LIFETIME   → 149,99€ - Illimité
 - `id` (PK)
 - `user_id` (FK vers users, unique)
 - `licenseType` (TRIAL, MONTHLY, YEARLY, LIFETIME)
-- `licenseKey` (unique) - Format: `RECEIPTIQ-XXXXXXXX-XXXXXXXX-XXXXXXXX`
+- `licenseKey` (unique) - Format: `ShopTracker-XXXXXXXX-XXXXXXXX-XXXXXXXX`
 - `startDate`
 - `expiryDate` (null pour LIFETIME)
 - `status`
@@ -190,7 +190,7 @@ validateLicenseKey(String licenseKey)
 
 **Format de clé de licence :**
 ```
-RECEIPTIQ-XXXXXXXX-XXXXXXXX-XXXXXXXX
+ShopTracker-XXXXXXXX-XXXXXXXX-XXXXXXXX
 ```
 
 ---
@@ -333,7 +333,7 @@ BCryptPasswordEncoder
 
 ### Clés de Licence
 ```
-Format: RECEIPTIQ-XXXXXXXX-XXXXXXXX-XXXXXXXX
+Format: ShopTracker-XXXXXXXX-XXXXXXXX-XXXXXXXX
 Génération: UUID.randomUUID() + formatage
 Unique: Index unique en base de données
 ```
@@ -555,6 +555,6 @@ Le système backend est prêt et fonctionnel. Il fournit :
 ---
 
 **Date de création :** 28 Décembre 2025  
-**Application :** 🧠 ReceiptIQ - Smart Receipt Intelligence  
+**Application :** 🧠 ShopTracker - Smart Receipt Intelligence  
 **Version :** 1.0.0-SNAPSHOT
 

@@ -22,13 +22,19 @@ public class SecurityConfig {
 
     /**
      * Configuration de la sécurité HTTP
-     * Pour l'instant, on autorise tous les accès pour ne pas bloquer l'application
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll() // Permet tous les accès pour l'instant
+            )
+            .logout(logout -> logout
+                .logoutUrl("/auth/logout")
+                .logoutSuccessUrl("/auth/login?logout=true")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll()
             )
             .csrf(csrf -> csrf.disable()) // Désactiver CSRF temporairement
             .headers(headers -> headers

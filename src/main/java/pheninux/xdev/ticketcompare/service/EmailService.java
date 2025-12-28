@@ -19,7 +19,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${app.mail.from:noreply@receiptiq.com}")
+    @Value("${app.mail.from:noreply@ShopTracker.com}")
     private String fromEmail;
 
     @Value("${app.base-url:http://localhost:8080}")
@@ -49,12 +49,12 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(user.getEmail());
-            message.setSubject("Bienvenue sur ReceiptIQ ! 🎉");
+            message.setSubject("Bienvenue sur ShopTracker ! 🎉");
 
             String body = String.format("""
                 Bonjour %s,
                 
-                Bienvenue sur ReceiptIQ !
+                Bienvenue sur ShopTracker !
                 
                 Votre compte a été créé avec succès et vous bénéficiez de 30 jours d'essai gratuit.
                 
@@ -71,7 +71,7 @@ public class EmailService {
                 Si vous avez des questions, n'hésitez pas à nous contacter.
                 
                 Cordialement,
-                L'équipe ReceiptIQ
+                L'équipe ShopTracker
                 """,
                 user.getFullName(),
                 baseUrl,
@@ -103,14 +103,14 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(user.getEmail());
-            message.setSubject("⏰ Votre licence ReceiptIQ expire bientôt");
+            message.setSubject("⏰ Votre licence ShopTracker expire bientôt");
 
             String body = String.format("""
                 Bonjour %s,
                 
-                Votre licence ReceiptIQ expire dans %d jour(s).
+                Votre licence ShopTracker expire dans %d jour(s).
                 
-                Pour continuer à utiliser ReceiptIQ sans interruption, 
+                Pour continuer à utiliser ShopTracker sans interruption, 
                 veuillez renouveler votre licence dès maintenant.
                 
                 Renouveler maintenant :
@@ -120,7 +120,7 @@ public class EmailService {
                 %s/pricing
                 
                 Cordialement,
-                L'équipe ReceiptIQ
+                L'équipe ShopTracker
                 """,
                 user.getFullName(),
                 daysRemaining,
@@ -154,7 +154,7 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(user.getEmail());
-            message.setSubject("✅ Confirmation de paiement - ReceiptIQ");
+            message.setSubject("✅ Confirmation de paiement - ShopTracker");
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             String expiryDate = license.getExpiryDate() != null
@@ -173,12 +173,12 @@ public class EmailService {
                 - Date d'expiration : %s
                 - Clé de licence : %s
                 
-                Vous pouvez maintenant profiter pleinement de toutes les fonctionnalités de ReceiptIQ.
+                Vous pouvez maintenant profiter pleinement de toutes les fonctionnalités de ShopTracker.
                 
                 Merci de votre confiance !
                 
                 Cordialement,
-                L'équipe ReceiptIQ
+                L'équipe ShopTracker
                 """,
                 user.getFullName(),
                 license.getLicenseType().getDisplayName(),
@@ -213,12 +213,12 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(user.getEmail());
-            message.setSubject("Confirmation d'annulation - ReceiptIQ");
+            message.setSubject("Confirmation d'annulation - ShopTracker");
 
             String body = String.format("""
                 Bonjour %s,
                 
-                Votre licence ReceiptIQ a été annulée comme demandé.
+                Votre licence ShopTracker a été annulée comme demandé.
                 
                 Vous pourrez continuer à utiliser l'application jusqu'à la fin de votre période payée.
                 
@@ -229,7 +229,7 @@ public class EmailService {
                 de vos commentaires.
                 
                 Cordialement,
-                L'équipe ReceiptIQ
+                L'équipe ShopTracker
                 """,
                 user.getFullName()
             );
@@ -259,12 +259,12 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(user.getEmail());
-            message.setSubject("Reçu de paiement - ReceiptIQ");
+            message.setSubject("Reçu de paiement - ShopTracker");
 
             String body = String.format("""
                 Bonjour %s,
                 
-                Voici votre reçu de paiement pour ReceiptIQ.
+                Voici votre reçu de paiement pour ShopTracker.
                 
                 REÇU DE PAIEMENT
                 ================
@@ -278,7 +278,7 @@ public class EmailService {
                 veuillez nous contacter en citant le numéro de transaction.
                 
                 Cordialement,
-                L'équipe ReceiptIQ
+                L'équipe ShopTracker
                 """,
                 user.getFullName(),
                 transactionId,

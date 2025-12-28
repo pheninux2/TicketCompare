@@ -296,6 +296,6 @@ curl http://localhost:8080/auth/register
 ---
 
 **Date de correction :** 28 Décembre 2025  
-**Application :** 🧠 ReceiptIQ - Smart Receipt Intelligence  
+**Application :** 🧠 ShopTracker - Smart Receipt Intelligence  
 **Statut :** ✅ CORRIGÉ ET FONCTIONNEL
 

@@ -8,36 +8,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">📊 TicketCompare</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/compare">Comparaison</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Prédictions
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/analysis/forecast">📈 Prix</a></li>
-                            <li><a class="dropdown-item" href="/analysis/consumption-forecast">🛒 Consommation</a></li>
-                            <li><a class="dropdown-item" href="/analysis/smart-shopping-list">🎯 Liste Intelligente</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/layout :: navbar}"></div>
 
     <div class="container py-5">
         <div class="jumbotron">
-            <h1 class="display-4">🧠 Bienvenue sur ReceiptIQ</h1>
+            <h1 class="display-4">🛒 Bienvenue sur ShopTracker</h1>
+            <p class="lead">Vos courses, optimisées</p>
+            <p class="text-muted">Suivez, comparez, économisez sur chaque achat</p>
             <p class="lead">Smart Receipt Intelligence - Analysez vos tickets intelligemment, comparez les prix et optimisez vos dépenses</p>
             <hr class="my-4">
             <p>Commencez par créer votre premier ticket ou explorez les statistiques intelligentes</p>

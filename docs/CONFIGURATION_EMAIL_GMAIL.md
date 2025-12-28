@@ -1,4 +1,4 @@
-# 📧 CONFIGURATION EMAIL GMAIL POUR RECEIPTIQ
+# 📧 CONFIGURATION EMAIL GMAIL POUR ShopTracker
 
 ## Date : 28 Décembre 2025
 
@@ -47,7 +47,7 @@ Google exige maintenant l'utilisation d'un **"Mot de passe d'application"** (App
 
 2. **Sélectionnez l'application :**
    - Application : **"Autre (nom personnalisé)"**
-   - Nom : **"ReceiptIQ Spring Boot"** ou **"TicketCompare App"**
+   - Nom : **"ShopTracker Spring Boot"** ou **"TicketCompare App"**
 
 3. **Cliquez sur "Générer"**
 
@@ -128,7 +128,7 @@ docker-compose -f docker/docker-compose-h2.yml logs -f
 
 1. **Vérifiez votre boîte de réception** (ou spam)
 2. Vous devriez recevoir un email avec :
-   - Sujet : **"Bienvenue sur ReceiptIQ ! 🎉"**
+   - Sujet : **"Bienvenue sur ShopTracker ! 🎉"**
    - Lien de vérification d'email
 
 ---
@@ -232,6 +232,6 @@ spring.mail.password=VOTRE_SENDGRID_API_KEY
 ---
 
 **Date :** 28 Décembre 2025  
-**Application :** 🧠 ReceiptIQ  
+**Application :** 🧠 ShopTracker  
 **Status :** ⚠️ EMAIL À CONFIGURER
 

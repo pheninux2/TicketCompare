@@ -8,7 +8,7 @@
 
 ---
 
-### 1. 🎯 **ReceiptIQ**
+### 1. 🎯 **ShopTracker**
 ```
 Logo : 🧠 + 🧾
 ┌─────────────────┐
@@ -170,7 +170,7 @@ Logo : 🔒 + 🧾
 
 ## 🎨 LOGOS DÉTAILLÉS - TOP 3
 
-### 🥇 Option 1 : **ReceiptIQ**
+### 🥇 Option 1 : **ShopTracker**
 
 ```
 ┌─────────────────────────────────┐
@@ -307,7 +307,7 @@ Logo : 🔒 + 🧾
 
 | Nom | Mémorabilité | Modernité | International | Logo | TOTAL |
 |-----|--------------|-----------|---------------|------|-------|
-| **ReceiptIQ** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 🧠 | **20/20** |
+| **ShopTracker** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 🧠 | **20/20** |
 | **ScanWise** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 🔍✨ | **19/20** |
 | **PriceJet** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ✈️💸 | **19/20** |
 | **ReceiptRadar** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 📡 | **17/20** |
@@ -317,7 +317,7 @@ Logo : 🔒 + 🧾
 
 ## 🎨 MAQUETTES DE LOGOS FINALES
 
-### Logo ReceiptIQ - Version Complète
+### Logo ShopTracker - Version Complète
 
 ```
 ╔════════════════════════════════════════╗
@@ -379,7 +379,7 @@ Style moderne et rapide
 
 ## 🏆 MA RECOMMANDATION FINALE
 
-### 🥇 **ReceiptIQ**
+### 🥇 **ShopTracker**
 
 **Pourquoi ce nom ?**
 1. ✅ **IQ** = Intelligence Quotient → Application intelligente
@@ -391,7 +391,7 @@ Style moderne et rapide
 7. ✅ Évolutif (peut s'étendre à d'autres fonctions)
 
 **Identité de marque complète :**
-- **Nom :** ReceiptIQ
+- **Nom :** ShopTracker
 - **Logo :** 🧠 + 🧾
 - **Slogan :** "Smart Shopping, Smarter Savings"
 - **Couleurs :** Bleu électrique + Violet + Vert
@@ -443,7 +443,7 @@ Style moderne et rapide
 
 ## 🎯 DÉCISION FINALE
 
-### 🏆 JE RECOMMANDE : **ReceiptIQ**
+### 🏆 JE RECOMMANDE : **ShopTracker**
 
 **Logo principal :**
 ```
@@ -473,7 +473,7 @@ Je peux **immédiatement** :
 6. ✅ Renommer les fichiers de configuration
 
 **Quel nom choisissez-vous ?**
-- 🥇 **ReceiptIQ** (mon préféré)
+- 🥇 **ShopTracker** (mon préféré)
 - 🥈 **ScanWise** (alternative forte)
 - Autre de la liste ?
 

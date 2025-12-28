@@ -53,7 +53,7 @@ public class StripeService {
         ChargeCreateParams params = ChargeCreateParams.builder()
                 .setAmount(amount.multiply(new BigDecimal("100")).longValue()) // Convertir en centimes
                 .setCurrency("eur")
-                .setDescription("ReceiptIQ - " + plan.getDisplayName())
+                .setDescription("ShopTracker - " + plan.getDisplayName())
                 .setSource(token)
                 .setReceiptEmail(email)
                 .build();

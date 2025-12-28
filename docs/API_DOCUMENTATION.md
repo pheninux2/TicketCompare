@@ -1,4 +1,4 @@
-# 📚 DOCUMENTATION API REST - ReceiptIQ
+# 📚 DOCUMENTATION API REST - ShopTracker
 
 ## Version: 1.0.0
 **Date:** 28 Décembre 2025
@@ -8,7 +8,7 @@
 ## 🌐 Base URL
 
 ```
-Production: https://api.receiptiq.com
+Production: https://api.ShopTracker.com
 Development: http://localhost:8080
 ```
 
@@ -124,7 +124,7 @@ Afficher les détails de la licence de l'utilisateur connecté
 {
   "id": 1,
   "licenseType": "TRIAL",
-  "licenseKey": "RECEIPTIQ-A3F5D8B2-9C1E4F7A-2D6B8E9F",
+  "licenseKey": "ShopTracker-A3F5D8B2-9C1E4F7A-2D6B8E9F",
   "startDate": "2025-12-01",
   "expiryDate": "2025-12-31",
   "status": "ACTIVE",
@@ -393,7 +393,7 @@ Database: H2 in-memory
 
 ### Production
 ```
-Base URL: https://api.receiptiq.com
+Base URL: https://api.ShopTracker.com
 Stripe: Live Mode (pk_live_***)
 Email: Production SMTP
 Database: PostgreSQL
@@ -403,9 +403,9 @@ Database: PostgreSQL
 
 ## 📞 SUPPORT
 
-**Email:** support@receiptiq.com  
-**Documentation:** https://docs.receiptiq.com  
-**Status Page:** https://status.receiptiq.com  
+**Email:** support@ShopTracker.com  
+**Documentation:** https://docs.ShopTracker.com  
+**Status Page:** https://status.ShopTracker.com  
 
 ---
 
@@ -424,5 +424,5 @@ Database: PostgreSQL
 
 **Date de dernière mise à jour:** 28 Décembre 2025  
 **Version de l'API:** 1.0.0  
-**Application:** 🧠 ReceiptIQ - Smart Receipt Intelligence
+**Application:** 🧠 ShopTracker - Smart Receipt Intelligence
 

@@ -170,7 +170,7 @@ public class LicenseService {
      */
     private String generateLicenseKey() {
         String uuid = UUID.randomUUID().toString().replace("-", "").toUpperCase();
-        return String.format("RECEIPTIQ-%s-%s-%s",
+        return String.format("ShopTracker-%s-%s-%s",
                            uuid.substring(0, 8),
                            uuid.substring(8, 16),
                            uuid.substring(16, 24));

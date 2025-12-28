@@ -377,5 +377,5 @@ URL: http://localhost:8080/statistics/trends
 
 **Date :** 27 Décembre 2025 - 22:30  
 **Statut :** ✅ TERMINÉ  
-**Application :** 🧠 ReceiptIQ - Smart Receipt Intelligence
+**Application :** 🧠 ShopTracker - Smart Receipt Intelligence
 

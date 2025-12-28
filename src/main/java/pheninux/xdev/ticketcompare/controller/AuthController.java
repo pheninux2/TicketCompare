@@ -160,24 +160,6 @@ public class AuthController {
         return "redirect:" + redirect;
     }
 
-    /**
-     * Déconnexion
-     */
-    @GetMapping("/logout")
-    public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
-        User user = (User) session.getAttribute("user");
-
-        if (user != null) {
-            log.info("Déconnexion de l'utilisateur: {}", user.getEmail());
-        }
-
-        session.invalidate();
-
-        redirectAttributes.addFlashAttribute("message",
-            "Vous avez été déconnecté avec succès");
-
-        return "redirect:/auth/login";
-    }
 
     /**
      * Vérification d'email
@@ -197,6 +179,29 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("error",
                 "Le lien de vérification est invalide ou expiré.");
         }
+
+        return "redirect:/auth/login";
+    }
+
+    /**
+     * Déconnexion de l'utilisateur
+     */
+    @GetMapping("/logout")
+    public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
+
+        // Récupérer l'utilisateur avant de détruire la session
+        User user = (User) session.getAttribute("user");
+
+        if (user != null) {
+            log.info("Déconnexion de l'utilisateur: {}", user.getEmail());
+        }
+
+        // Invalider la session
+        session.invalidate();
+
+        // Message de confirmation
+        redirectAttributes.addFlashAttribute("success",
+            "Vous avez été déconnecté avec succès.");
 
         return "redirect:/auth/login";
     }

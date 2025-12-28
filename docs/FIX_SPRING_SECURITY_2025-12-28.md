@@ -341,5 +341,5 @@ http://localhost:8080
 
 **Date :** 28 Décembre 2025  
 **Statut :** ✅ RÉSOLU  
-**Application :** 🧠 ReceiptIQ - Smart Receipt Intelligence
+**Application :** 🧠 ShopTracker - Smart Receipt Intelligence
 

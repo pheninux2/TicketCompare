@@ -379,7 +379,7 @@ URL: http://localhost:8080/tickets/edit/{id}
 
 **Date :** 27 Décembre 2025 - 23:00  
 **Statut :** ✅ TERMINÉ  
-**Application :** 🧠 ReceiptIQ - Smart Receipt Intelligence
+**Application :** 🧠 ShopTracker - Smart Receipt Intelligence
 
 **Prochaine étape :** Tester l'application !
 

@@ -1,4 +1,4 @@
-# ✅ SYSTÈME COMPLET IMPLÉMENTÉ - ReceiptIQ
+# ✅ SYSTÈME COMPLET IMPLÉMENTÉ - ShopTracker
 
 ## Date : 28 Décembre 2025
 
@@ -523,7 +523,7 @@ MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USERNAME=votre.email@gmail.com
 MAIL_PASSWORD=votre_mot_de_passe_app
-APP_MAIL_FROM=noreply@receiptiq.com
+APP_MAIL_FROM=noreply@ShopTracker.com
 APP_BASE_URL=https://votre-domaine.com
 ```
 
@@ -640,7 +640,7 @@ Le backend est **complètement opérationnel** avec :
 ---
 
 **Date :** 28 Décembre 2025  
-**Application :** 🧠 ReceiptIQ - Smart Receipt Intelligence  
+**Application :** 🧠 ShopTracker - Smart Receipt Intelligence  
 **Version :** 1.0.0-SNAPSHOT  
 **Statut :** ✅ BACKEND COMPLET - PRÊT POUR LE FRONTEND
 

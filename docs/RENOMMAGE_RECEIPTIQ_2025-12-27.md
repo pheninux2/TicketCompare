@@ -1,4 +1,4 @@
-# 🎉 RENOMMAGE COMPLET EN ReceiptIQ !
+# 🎉 RENOMMAGE COMPLET EN ShopTracker !
 
 ## Date : 27 Décembre 2025 - 22:15
 
@@ -6,7 +6,7 @@
 
 ## ✅ APPLICATION RENOMMÉE AVEC SUCCÈS
 
-### 🧠 Nouveau Nom : **ReceiptIQ**
+### 🧠 Nouveau Nom : **ShopTracker**
 ### 📊 Ancien Nom : TicketCompare
 
 ---
@@ -23,15 +23,15 @@ AVANT :
 <description>Application de gestion de tickets de caisse</description>
 
 APRÈS :
-<artifactId>receiptiq</artifactId>
-<name>ReceiptIQ</name>
+<artifactId>ShopTracker</artifactId>
+<name>ShopTracker</name>
 <description>Smart Receipt Intelligence - Application intelligente de gestion</description>
 ```
 
 #### application.properties
 ```properties
 AVANT : spring.application.name=TicketCompare
-APRÈS : spring.application.name=ReceiptIQ
+APRÈS : spring.application.name=ShopTracker
 ```
 
 ---
@@ -41,7 +41,7 @@ APRÈS : spring.application.name=ReceiptIQ
 #### Logo et Nom
 ```
 AVANT : 📊 TicketCompare
-APRÈS : 🧠 ReceiptIQ
+APRÈS : 🧠 ShopTracker
 ```
 
 **Changé dans 20 fichiers HTML :**
@@ -73,7 +73,7 @@ APRÈS : 🧠 ReceiptIQ
 #### Titre Principal
 ```html
 AVANT : <h1>Bienvenue sur TicketCompare</h1>
-APRÈS : <h1>🧠 Bienvenue sur ReceiptIQ</h1>
+APRÈS : <h1>🧠 Bienvenue sur ShopTracker</h1>
 ```
 
 #### Slogan
@@ -97,7 +97,7 @@ Tous droits réservés
 
 #### Après
 ```
-© 2025 ReceiptIQ 🧠
+© 2025 ShopTracker 🧠
 Tous droits réservés
 ```
 
@@ -117,7 +117,7 @@ Application web de gestion et comparaison de tickets
 
 **Après :**
 ```markdown
-# 🧠 ReceiptIQ
+# 🧠 ShopTracker
 Smart Receipt Intelligence - Application web intelligente
 ```
 
@@ -127,7 +127,7 @@ Smart Receipt Intelligence - Application web intelligente
 
 ---
 
-## 🎨 IDENTITÉ DE MARQUE ReceiptIQ
+## 🎨 IDENTITÉ DE MARQUE ShopTracker
 
 ### Logo Principal
 ```
@@ -137,7 +137,7 @@ Smart Receipt Intelligence - Application web intelligente
 │   │   🧠    │   │
 │   └─────────┘   │
 │                 │
-│   ReceiptIQ     │
+│   ShopTracker     │
 │   ──────────    │
 │   Intelligence  │
 │                 │
@@ -178,10 +178,10 @@ Smart Receipt Intelligence - Application web intelligente
 
 | Texte | Avant | Après |
 |-------|-------|-------|
-| Nom complet | TicketCompare | ReceiptIQ |
-| Logo navbar | 📊 TicketCompare | 🧠 ReceiptIQ |
-| Titres pages | TicketCompare</title> | ReceiptIQ</title> |
-| Footer | © TicketCompare | © ReceiptIQ 🧠 |
+| Nom complet | TicketCompare | ShopTracker |
+| Logo navbar | 📊 TicketCompare | 🧠 ShopTracker |
+| Titres pages | TicketCompare</title> | ShopTracker</title> |
+| Footer | © TicketCompare | © ShopTracker 🧠 |
 | **TOTAL** | **~80+** | occurrences |
 
 ---
@@ -195,7 +195,7 @@ Smart Receipt Intelligence - Application web intelligente
 └────────────────────────────────────────┘
 
 ┌────────────────────────────────────────┐
-│  🧠 ReceiptIQ        [Menu]           │ ✅ APRÈS
+│  🧠 ShopTracker        [Menu]           │ ✅ APRÈS
 └────────────────────────────────────────┘
 ```
 
@@ -209,7 +209,7 @@ AVANT ❌:
 
 APRÈS ✅:
 ┌─────────────────────────────────────────┐
-│ 🧠 Bienvenue sur ReceiptIQ             │
+│ 🧠 Bienvenue sur ShopTracker             │
 │ Smart Receipt Intelligence -            │
 │ Analysez vos tickets intelligemment...  │
 └─────────────────────────────────────────┘
@@ -224,7 +224,7 @@ AVANT ❌:
 
 APRÈS ✅:
 ┌────────────────────────────────────────┐
-│ Mohamed Adil  │ © 2025 ReceiptIQ 🧠   │
+│ Mohamed Adil  │ © 2025 ShopTracker 🧠   │
 └────────────────────────────────────────┘
 ```
 
@@ -243,8 +243,8 @@ APRÈS ✅:
 
 2. ✅ **Vérifier les pages**
    - Page d'accueil : http://localhost:8080/
-   - Navbar avec 🧠 ReceiptIQ
-   - Footer avec © 2025 ReceiptIQ 🧠
+   - Navbar avec 🧠 ShopTracker
+   - Footer avec © 2025 ShopTracker 🧠
 
 3. ✅ **Tester les fonctionnalités**
    - Toutes les pages doivent afficher le nouveau nom
@@ -265,7 +265,7 @@ Pour une version plus professionnelle, vous pouvez créer :
    - Version vectorielle pour la navbar
    
 3. **Logo complet**
-   - Cerveau + texte "ReceiptIQ" en différentes tailles
+   - Cerveau + texte "ShopTracker" en différentes tailles
 
 4. **Social Media**
    - Image OpenGraph pour partage
@@ -287,7 +287,7 @@ Le renommer nécessiterait de recompiler et pourrait causer des problèmes.
 
 ### Ce Qui Compte Vraiment
 
-✅ **Interface utilisateur** - L'utilisateur voit "ReceiptIQ" partout  
+✅ **Interface utilisateur** - L'utilisateur voit "ShopTracker" partout  
 ✅ **Branding** - Logo 🧠 cohérent sur toutes les pages  
 ✅ **Documentation** - README à jour  
 ✅ **Configuration** - Nom dans pom.xml et properties  
@@ -312,7 +312,7 @@ Le renommer nécessiterait de recompiler et pourrait causer des problèmes.
 ```
 ╔═══════════════════════════════╗
 ║                               ║
-║        🧠 ReceiptIQ           ║
+║        🧠 ShopTracker           ║
 ║                               ║
 ║  Smart Receipt Intelligence   ║
 ║                               ║
@@ -323,11 +323,11 @@ Le renommer nécessiterait de recompiler et pourrait causer des problèmes.
 
 ## 🎊 SUCCÈS !
 
-**L'application a été complètement renommée en ReceiptIQ !**
+**L'application a été complètement renommée en ShopTracker !**
 
 **Prochaine étape :** Rebuild et test
 
 **Date de renommage :** 27 Décembre 2025 - 22:15  
 **Statut :** ✅ TERMINÉ  
-**Nom final :** 🧠 **ReceiptIQ** - Smart Receipt Intelligence
+**Nom final :** 🧠 **ShopTracker** - Smart Receipt Intelligence
 

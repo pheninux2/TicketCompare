@@ -1,4 +1,4 @@
-# 🧠 ReceiptIQ
+# 🧠 ShopTracker
 
 **Smart Receipt Intelligence** - Application web intelligente de gestion et comparaison de tickets de caisse avec OCR (Reconnaissance Optique de Caractères).
 
