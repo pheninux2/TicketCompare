@@ -1,0 +1,122 @@
+# ===================================
+# ShopTracker - Production Windows
+# Docker Compose avec PostgreSQL
+# ===================================
+
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: shoptracker-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shoptracker
+      POSTGRES_USER: shoptracker_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ShopTracker2025!Secure}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # Données persistantes sur le disque Windows
+      - ./data/postgres:/var/lib/postgresql/data
+      # Backup automatique
+      - ./backups:/backups
+    ports:
+      # Port PostgreSQL (accessible uniquement en local)
+      - "127.0.0.1:5432:5432"
+    networks:
+      - shoptracker-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shoptracker_admin -d shoptracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application ShopTracker
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+    container_name: shoptracker-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Configuration production
+      SPRING_PROFILES_ACTIVE: prod
+
+      # Base de données PostgreSQL
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shoptracker
+      SPRING_DATASOURCE_USERNAME: shoptracker_admin
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ShopTracker2025!Secure}
+
+      # Hibernate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: false
+
+      # Tesseract OCR
+      TESSDATA_PREFIX: /usr/share/tessdata
+
+      # Sécurité
+      SERVER_PORT: 8080
+
+      # Email (optionnel)
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+
+      # Stripe (optionnel)
+      STRIPE_API_KEY: ${STRIPE_API_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+
+      # Application
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+
+    volumes:
+      # Uploads persistants
+      - ./data/uploads:/app/uploads
+      # Logs persistants
+      - ./data/logs:/app/logs
+    ports:
+      # Port application (accessible depuis Windows)
+      - "8080:8080"
+    networks:
+      - shoptracker-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PgAdmin (Interface d'administration BDD - ADMIN SEULEMENT)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: shoptracker-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL:-admin@shoptracker.local}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD:-AdminSecure2025!}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'True'
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+    ports:
+      # Port PgAdmin (accessible uniquement en local pour admin)
+      - "127.0.0.1:5050:80"
+    networks:
+      - shoptracker-network
+    depends_on:
+      - postgres
+    profiles:
+      # PgAdmin n'est lancé que si explicitement demandé
+      - admin
+
+networks:
+  shoptracker-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  pgadmin-data:
+

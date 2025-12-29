@@ -1,0 +1,67 @@
+# ===================================
+# ShopTracker - Environnement DEVELOPPEMENT
+# Base de donnees H2 en memoire
+# ===================================
+
+
+services:
+  # Application ShopTracker en mode développement
+  app:
+    build:
+      context: ../..
+      dockerfile: environments/dev/Dockerfile.dev
+    container_name: shoptracker-dev
+    restart: unless-stopped
+    environment:
+      # Configuration développement
+      SPRING_PROFILES_ACTIVE: dev
+
+      # Base de données H2 (en mémoire)
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:shoptracker;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD:
+
+      # H2 Console activée
+      SPRING_H2_CONSOLE_ENABLED: true
+      SPRING_H2_CONSOLE_PATH: /h2-console
+
+      # Hibernate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_SHOW_SQL: true
+
+      # Tesseract OCR
+      TESSDATA_PREFIX: /usr/share/tessdata
+
+      # Hot reload
+      SPRING_DEVTOOLS_RESTART_ENABLED: true
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: true
+
+      # Logs debug
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_PHENINUX_XDEV_TICKETCOMPARE: DEBUG
+
+    volumes:
+      # Code source pour hot reload
+      - ../../src:/app/src
+      # Uploads temporaires
+      - ./data/uploads:/app/uploads
+      # Logs
+      - ./data/logs:/app/logs
+    ports:
+      # Port application
+      - "8080:8080"
+      # Port pour debugger
+      - "5005:5005"
+    networks:
+      - shoptracker-dev-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  shoptracker-dev-network:
+    driver: bridge
+

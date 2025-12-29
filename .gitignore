@@ -124,3 +124,33 @@ uploads/*
 tessdata/
 *.csv
 
+# ===================================
+# Production Data (NE JAMAIS COMMITTER)
+# ===================================
+# Fichiers d'environnement avec mots de passe
+docker/.env
+.env
+*.env.local
+*.env.prod
+
+# Données de production PostgreSQL
+docker/data/postgres/
+docker/data/pgadmin/
+docker/data/uploads/
+docker/data/logs/
+
+# Backups de base de données
+docker/backups/
+backups/
+*.sql
+*.sql.zip
+*.sql.gz
+
+# Images Docker sauvegardées
+shoptracker*.tar
+shoptracker*.zip
+
+# Logs de production
+logs/
+*.log
+

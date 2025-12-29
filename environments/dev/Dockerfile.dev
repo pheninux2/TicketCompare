@@ -1,0 +1,50 @@
+# ===================================
+# Dockerfile pour Développement
+# Mode hot-reload avec Spring DevTools
+# ===================================
+
+FROM eclipse-temurin:21-jdk-alpine
+
+LABEL maintainer="Mohamed Adil HADDAD <adil.haddad.xdev@gmail.com>"
+LABEL description="ShopTracker Development Environment"
+
+WORKDIR /app
+
+# Installer Tesseract OCR et outils de développement
+RUN apk add --no-cache \
+    tesseract-ocr \
+    tesseract-ocr-data-fra \
+    tesseract-ocr-data-eng \
+    ttf-dejavu \
+    wget \
+    curl \
+    bash \
+    maven && \
+    mkdir -p /app/tessdata && \
+    ln -sf /usr/share/tessdata/* /app/tessdata/ 2>/dev/null || true
+
+# Copier les fichiers Maven
+COPY pom.xml .
+COPY src ./src
+
+# Télécharger les dépendances
+RUN mvn dependency:go-offline -B
+
+# Créer les dossiers nécessaires
+RUN mkdir -p /app/uploads /app/logs
+
+# Exposer les ports
+EXPOSE 8080 5005
+
+# Variables d'environnement pour développement
+ENV SPRING_PROFILES_ACTIVE=dev \
+    TESSDATA_PREFIX=/usr/share/tessdata \
+    JAVA_OPTS="-Xms256m -Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
+# Lancer avec Maven en mode développement (hot reload)
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"]
+
