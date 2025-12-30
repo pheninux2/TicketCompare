@@ -1,0 +1,32 @@
+# ==========================================
+# .gitignore pour le dossier deploy
+# ==========================================
+
+# Variables d'environnement sensibles
+.env.production
+.env
+
+# Credentials
+credentials/
+*.credentials.txt
+
+# Logs
+*.log
+
+# Backups
+backups/
+*.dump
+*.sql
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*.swp
+*~
+
+# Certificats SSL
+ssl/
+*.pem
+*.key
+*.crt
+

@@ -48,7 +48,7 @@ docker-compose build
 
 Write-Host ""
 Write-Host "[*] Demarrage en mode production..." -ForegroundColor Yellow
-docker-compose up -d
+docker-compose up
 
 Write-Host ""
 Write-Host "[*] Attente du demarrage (30 secondes)..." -ForegroundColor Yellow

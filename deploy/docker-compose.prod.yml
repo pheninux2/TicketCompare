@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: shoptracker-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-shoptracker}
+      POSTGRES_USER: ${DB_USER:-shoptracker_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - /opt/shoptracker/data/postgres:/var/lib/postgresql/data
+      - /opt/shoptracker/backups:/backups
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - shoptracker-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-shoptracker_admin} -d ${DB_NAME:-shoptracker}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: shoptracker-app
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-shoptracker}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-shoptracker_admin}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SERVER_PORT: 8080
+    volumes:
+      - /opt/shoptracker/data/uploads:/app/uploads
+      - /opt/shoptracker/logs/app:/app/logs
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - shoptracker-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  shoptracker-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  app_uploads:
+  app_logs:
+
