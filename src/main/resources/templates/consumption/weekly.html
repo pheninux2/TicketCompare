@@ -15,18 +15,42 @@
             background-color: #ffc107 !important;
             transform: scale(1.05);
         }
+        .badge-achats.clickable {
+            cursor: pointer;
+        }
+        .badge-achats.clickable:hover {
+            opacity: 0.85;
+        }
         .collapse {
-            transition: height 0.3s ease;
+            transition: all 0.3s ease-in-out;
+        }
+        .collapse.show {
+            animation: slideDown 0.3s ease-in-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
         }
         .table-sm td {
             padding: 0.5rem;
         }
+        tr[id^="details-"] {
+            background-color: #f8f9fa;
+        }
         tr[id^="details-"] td {
             border: none;
+            padding: 0 !important;
         }
         .accordion-button {
             font-size: 1.1rem;
             padding: 1rem 1.25rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
         .accordion-button:not(.collapsed) {
             background-color: #198754;
@@ -40,10 +64,21 @@
             border: 2px solid #dee2e6;
             margin-bottom: 0.5rem;
             border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .accordion-collapse {
+            transition: height 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        .accordion-collapse.collapsing {
+            transition: height 0.3s ease-in-out;
         }
         .accordion-button:focus {
             box-shadow: none;
             border-color: #198754;
+        }
+        .accordion-button::after {
+            transition: transform 0.2s ease;
         }
 
         /* Alignement des colonnes du tableau */
@@ -53,45 +88,62 @@
         }
         .table-consumption th:nth-child(1),
         .table-consumption td:nth-child(1) {
-            width: 35%; /* Produit */
+            width: 40%; /* Produit - plus large pour le nom + badge */
         }
         .table-consumption th:nth-child(2),
         .table-consumption td:nth-child(2) {
             width: 12%; /* Quantité */
-            text-align: right !important;
+            text-align: right;
         }
         .table-consumption th:nth-child(3),
         .table-consumption td:nth-child(3) {
             width: 8%; /* Unité */
-            text-align: center !important;
+            text-align: center;
         }
         .table-consumption th:nth-child(4),
         .table-consumption td:nth-child(4) {
             width: 15%; /* Coût Total */
-            text-align: right !important;
+            text-align: right;
         }
         .table-consumption th:nth-child(5),
         .table-consumption td:nth-child(5) {
-            width: 12%; /* Achats */
-            text-align: center !important;
+            width: 10%; /* Achats */
+            text-align: center;
         }
         .table-consumption th:nth-child(6),
         .table-consumption td:nth-child(6) {
-            width: 18%; /* Prix/U Moy */
-            text-align: right !important;
+            width: 15%; /* Prix/U Moy */
+            text-align: right;
         }
 
         /* Assurer que les cellules ne débordent pas */
         .table-consumption td {
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            vertical-align: middle;
         }
 
         /* Exception pour la colonne produit qui peut contenir le badge */
         .table-consumption td:first-child {
             white-space: normal;
             overflow: visible;
+        }
+
+        /* Aligner les titres des colonnes */
+        .table-consumption th:nth-child(2) {
+            text-align: right !important;
+        }
+        .table-consumption th:nth-child(3) {
+            text-align: center !important;
+        }
+        .table-consumption th:nth-child(4) {
+            text-align: right !important;
+        }
+        .table-consumption th:nth-child(5) {
+            text-align: center !important;
+        }
+        .table-consumption th:nth-child(6) {
+            text-align: right !important;
         }
 
         /* Styles pour le tableau de détails des achats */
@@ -297,21 +349,20 @@
                                                     <tr>
                                                         <td>
                                                             <strong th:text="${item.productName}"></strong>
-                                                            <!-- Badge si acheté plusieurs fois -->
-                                                            <span th:if="${item.purchaseCount > 1}"
-                                                                  class="badge bg-warning text-dark ms-2"
-                                                                  style="cursor: pointer;"
-                                                                  data-bs-toggle="collapse"
-                                                                  th:data-bs-target="'#details-' + ${catStat.index} + '-' + ${iterStat.index}"
-                                                                  title="Cliquez pour voir les détails">
-                                                                <i class="fas fa-chevron-down"></i>
-                                                                <span th:text="${item.purchaseCount}"></span> achats
+                                                            <!-- Badge toujours visible avec nombre d'achats -->
+                                                            <span class="badge ms-2 badge-achats"
+                                                                  th:classappend="${item.purchaseCount > 1} ? 'bg-warning text-dark clickable' : 'bg-secondary'"
+                                                                  th:attr="data-details-id=${item.purchaseCount > 1} ? 'details-' + ${catStat.index} + '-' + ${iterStat.index} : ''"
+                                                                  th:title="${item.purchaseCount > 1} ? 'Cliquez pour voir les détails' : 'Achat unique'">
+                                                                <i class="fas" th:classappend="${item.purchaseCount > 1} ? 'fa-chevron-down' : 'fa-check'"></i>
+                                                                <span th:text="${item.purchaseCount}"></span>
+                                                                <span th:text="${item.purchaseCount > 1} ? ' achats' : ' achat'"></span>
                                                             </span>
                                                         </td>
                                                         <td class="text-end">
-                                                            <strong th:text="${#numbers.formatDecimal(item.totalQuantity, 1, 2)}"></strong>
+                                                            <span th:text="${#numbers.formatDecimal(item.totalQuantity, 1, 2)}"></span>
                                                         </td>
-                                                        <td th:text="${item.unit ?: '-'}"></td>
+                                                        <td class="text-center" th:text="${item.unit ?: '-'}"></td>
                                                         <td class="text-end">
                                                             <strong class="text-danger" th:text="${'€' + #numbers.formatDecimal(item.totalCost, 1, 2)}"></strong>
                                                         </td>
@@ -473,7 +524,77 @@
             if (periodSelect) {
                 toggleCustomDates(periodSelect.value);
             }
+
+            // Attacher les event listeners aux badges cliquables
+            document.querySelectorAll('.badge-achats.clickable').forEach(function(badge) {
+                badge.addEventListener('click', function() {
+                    const detailsId = this.getAttribute('data-details-id');
+                    if (detailsId) {
+                        toggleDetails(detailsId, this);
+                    }
+                });
+            });
+
+            // Empêcher Bootstrap de fermer automatiquement les autres accordéons
+            const accordionElement = document.getElementById('categoryAccordion');
+            if (accordionElement) {
+                // Intercepter l'événement AVANT que Bootstrap ne ferme les autres panels
+                accordionElement.addEventListener('hide.bs.collapse', function(e) {
+                    // Empêcher la fermeture automatique des autres accordéons
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, true);
+
+                // Gérer manuellement le clic sur les boutons d'accordéon
+                document.querySelectorAll('.accordion-button').forEach(function(button) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const targetId = this.getAttribute('data-bs-target');
+                        const targetElement = document.querySelector(targetId);
+
+                        if (targetElement) {
+                            // Toggle l'état collapsed du bouton
+                            this.classList.toggle('collapsed');
+
+                            // Toggle l'affichage du contenu
+                            if (targetElement.classList.contains('show')) {
+                                targetElement.classList.remove('show');
+                                this.setAttribute('aria-expanded', 'false');
+                            } else {
+                                targetElement.classList.add('show');
+                                this.setAttribute('aria-expanded', 'true');
+                            }
+                        }
+                    });
+                });
+            }
         });
+
+        // Toggle details avec gestion de l'icône
+        function toggleDetails(id, badgeElement) {
+            const detailsRow = document.getElementById(id);
+            if (!detailsRow) return;
+
+            const icon = badgeElement.querySelector('i');
+
+            if (detailsRow.classList.contains('show')) {
+                // Fermer
+                detailsRow.classList.remove('show');
+                if (icon) {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            } else {
+                // Ouvrir
+                detailsRow.classList.add('show');
+                if (icon) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            }
+        }
     </script>
 
     <!-- Modal Comment ça fonctionne -->

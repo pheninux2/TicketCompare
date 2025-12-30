@@ -1,6 +1,7 @@
 package pheninux.xdev.ticketcompare.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pheninux.xdev.ticketcompare.dto.ConsumptionDTO;
@@ -12,14 +13,16 @@ import pheninux.xdev.ticketcompare.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ConsumptionService {
     private final ConsumptionStatisticRepository consumptionRepository;
     private final ProductRepository productRepository;
@@ -28,9 +31,9 @@ public class ConsumptionService {
         List<Product> products = productRepository.findAll();
 
         Map<String, List<Product>> groupedByProductName = products.stream()
-            .filter(p -> p.getTicket().getDate().isAfter(startDate.minusDays(1)) &&
-                         p.getTicket().getDate().isBefore(endDate.plusDays(1)))
-            .collect(Collectors.groupingBy(Product::getName));
+                .filter(p -> p.getTicket().getDate().isAfter(startDate.minusDays(1)) &&
+                        p.getTicket().getDate().isBefore(endDate.plusDays(1)))
+                .collect(Collectors.groupingBy(Product::getName));
 
         for (Map.Entry<String, List<Product>> entry : groupedByProductName.entrySet()) {
             String productName = entry.getKey();
@@ -38,35 +41,35 @@ public class ConsumptionService {
 
             // Group by week
             Map<LocalDate, List<Product>> groupedByWeek = productList.stream()
-                .collect(Collectors.groupingBy(p -> getWeekStart(p.getTicket().getDate())));
+                    .collect(Collectors.groupingBy(p -> getWeekStart(p.getTicket().getDate())));
 
             for (Map.Entry<LocalDate, List<Product>> weekEntry : groupedByWeek.entrySet()) {
                 LocalDate weekStart = weekEntry.getKey();
                 List<Product> weekProducts = weekEntry.getValue();
 
                 BigDecimal totalQuantity = weekProducts.stream()
-                    .map(Product::getQuantity)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        .map(Product::getQuantity)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                 BigDecimal totalCost = weekProducts.stream()
-                    .map(Product::getTotalPrice)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        .map(Product::getTotalPrice)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                 ConsumptionStatistic existing = consumptionRepository.findAll().stream()
-                    .filter(cs -> cs.getProductName().equals(productName) && cs.getWeekStart().equals(weekStart))
-                    .findFirst()
-                    .orElse(null);
+                        .filter(cs -> cs.getProductName().equals(productName) && cs.getWeekStart().equals(weekStart))
+                        .findFirst()
+                        .orElse(null);
 
                 if (existing == null) {
                     ConsumptionStatistic statistic = ConsumptionStatistic.builder()
-                        .productName(productName)
-                        .weekStart(weekStart)
-                        .totalQuantity(totalQuantity)
-                        .totalCost(totalCost)
-                        .purchaseCount((long) weekProducts.size())
-                        .category(weekProducts.get(0).getCategory())
-                        .unit(weekProducts.get(0).getUnit())
-                        .build();
+                            .productName(productName)
+                            .weekStart(weekStart)
+                            .totalQuantity(totalQuantity)
+                            .totalCost(totalCost)
+                            .purchaseCount((long) weekProducts.size())
+                            .category(weekProducts.get(0).getCategory())
+                            .unit(weekProducts.get(0).getUnit())
+                            .build();
                     consumptionRepository.save(statistic);
                 }
             }
@@ -76,17 +79,17 @@ public class ConsumptionService {
     @Transactional(readOnly = true)
     public List<ConsumptionDTO> getWeeklyConsumption(LocalDate weekStart) {
         return consumptionRepository.getTopProductsByWeek(weekStart).stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ConsumptionDTO> getTopProductsByWeek(LocalDate weekStart, int limit) {
         List<ConsumptionStatistic> stats = consumptionRepository.getTopProductsByWeek(weekStart);
         return stats.stream()
-            .limit(limit)
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
+                .limit(limit)
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -95,9 +98,9 @@ public class ConsumptionService {
         LocalDate startDate = endDate.minusWeeks(weeks);
 
         return consumptionRepository.getConsumptionByWeekRange(startDate, endDate).stream()
-            .filter(cs -> cs.getProductName().equals(productName))
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
+                .filter(cs -> cs.getProductName().equals(productName))
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -107,75 +110,97 @@ public class ConsumptionService {
     @Transactional(readOnly = true)
     public List<ConsumptionDTO> getProductConsumption(LocalDate startDate, LocalDate endDate,
                                                       String search, String sortBy, String sortOrder) {
+        log.info("----- SERVICE CONSOMMATION -----");
+        log.info("Filtrage période: {} à {}", startDate, endDate);
+
+        // Récupérer tous les produits
+        List<Product> allProducts = productRepository.findAll();
+        log.info("Total produits en base: {}", allProducts.size());
+
+        // Logger quelques dates de tickets pour déboguer
+        allProducts.stream()
+            .limit(5)
+            .forEach(p -> log.debug("Ticket exemple - ID: {}, Date: {}, Produit: {}",
+                p.getTicket().getId(), p.getTicket().getDate(), p.getName()));
+
         // Récupérer tous les produits de la période
-        List<Product> products = productRepository.findAll().stream()
+        List<Product> products = allProducts.stream()
             .filter(p -> {
                 LocalDate ticketDate = p.getTicket().getDate();
-                return !ticketDate.isBefore(startDate) && !ticketDate.isAfter(endDate);
+                boolean matches = !ticketDate.isBefore(startDate) && !ticketDate.isAfter(endDate);
+                if (!matches) {
+                    log.debug("Produit EXCLU - Date: {}, Produit: {} (startDate={}, endDate={})",
+                        ticketDate, p.getName(), startDate, endDate);
+                }
+                return matches;
             })
             .collect(Collectors.toList());
+
+        log.info("Produits après filtrage période: {}", products.size());
 
         // Filtrer par recherche si nécessaire
         if (search != null && !search.trim().isEmpty()) {
             String searchLower = search.toLowerCase();
+            int beforeSearch = products.size();
             products = products.stream()
                 .filter(p -> p.getName().toLowerCase().contains(searchLower) ||
                            (p.getCategory() != null && p.getCategory().toLowerCase().contains(searchLower)))
                 .collect(Collectors.toList());
+            log.info("Produits après recherche '{}': {} (avant: {})", search, products.size(), beforeSearch);
         }
 
         // Grouper par nom de produit
         Map<String, List<Product>> groupedByProduct = products.stream()
-            .collect(Collectors.groupingBy(Product::getName));
+                .collect(Collectors.groupingBy(Product::getName));
 
         // Créer les DTOs
         List<ConsumptionDTO> result = groupedByProduct.entrySet().stream()
-            .map(entry -> {
-                String productName = entry.getKey();
-                List<Product> productList = entry.getValue();
+                .map(entry -> {
+                    String productName = entry.getKey();
+                    List<Product> productList = entry.getValue();
 
-                BigDecimal totalQuantity = productList.stream()
-                    .map(Product::getQuantity)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal totalQuantity = productList.stream()
+                            .map(Product::getQuantity)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                BigDecimal totalCost = productList.stream()
-                    .map(p -> p.getTotalPrice() != null ? p.getTotalPrice() :
-                             (p.getPrice() != null && p.getQuantity() != null ?
-                              p.getPrice().multiply(p.getQuantity()) : BigDecimal.ZERO))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal totalCost = productList.stream()
+                            .map(p -> p.getTotalPrice() != null ? p.getTotalPrice() :
+                                    (p.getPrice() != null && p.getQuantity() != null ?
+                                            p.getPrice().multiply(p.getQuantity()) : BigDecimal.ZERO))
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                BigDecimal avgPricePerUnit = BigDecimal.ZERO;
-                if (totalQuantity.compareTo(BigDecimal.ZERO) > 0) {
-                    avgPricePerUnit = totalCost.divide(totalQuantity, 2, RoundingMode.HALF_UP);
-                }
+                    BigDecimal avgPricePerUnit = BigDecimal.ZERO;
+                    if (totalQuantity.compareTo(BigDecimal.ZERO) > 0) {
+                        avgPricePerUnit = totalCost.divide(totalQuantity, 2, RoundingMode.HALF_UP);
+                    }
 
-                // Créer les détails de chaque achat
-                List<ConsumptionDTO.PurchaseDetail> details = productList.stream()
-                    .map(p -> ConsumptionDTO.PurchaseDetail.builder()
-                        .date(p.getTicket().getDate())
-                        .store(p.getTicket().getStore())
-                        .quantity(p.getQuantity())
-                        .price(p.getPrice())
-                        .totalPrice(p.getTotalPrice() != null ? p.getTotalPrice() :
-                                   (p.getPrice() != null && p.getQuantity() != null ?
-                                    p.getPrice().multiply(p.getQuantity()) : BigDecimal.ZERO))
-                        .build())
-                    .sorted(Comparator.comparing(ConsumptionDTO.PurchaseDetail::getDate).reversed())
-                    .collect(Collectors.toList());
+                    // Créer les détails de chaque achat
+                    List<ConsumptionDTO.PurchaseDetail> details = productList.stream()
+                            .map(p -> ConsumptionDTO.PurchaseDetail.builder()
+                                    .date(p.getTicket().getDate())
+                                    .store(p.getTicket().getStore())
+                                    .quantity(p.getQuantity())
+                                    .price(p.getPrice())
+                                    .totalPrice(p.getTotalPrice() != null ? p.getTotalPrice() :
+                                            (p.getPrice() != null && p.getQuantity() != null ?
+                                                    p.getPrice().multiply(p.getQuantity()) : BigDecimal.ZERO))
+                                    .build())
+                            .sorted(Comparator.comparing(ConsumptionDTO.PurchaseDetail::getDate).reversed())
+                            .collect(Collectors.toList());
 
-                return ConsumptionDTO.builder()
-                    .productName(productName)
-                    .category(productList.get(0).getCategory())
-                    .unit(productList.get(0).getUnit())
-                    .totalQuantity(totalQuantity)
-                    .totalCost(totalCost)
-                    .purchaseCount((long) productList.size())
-                    .averagePricePerUnit(avgPricePerUnit)
-                    .weekStart(startDate) // Pour compatibilité
-                    .purchaseDetails(details)
-                    .build();
-            })
-            .collect(Collectors.toList());
+                    return ConsumptionDTO.builder()
+                            .productName(productName)
+                            .category(productList.get(0).getCategory())
+                            .unit(productList.get(0).getUnit())
+                            .totalQuantity(totalQuantity)
+                            .totalCost(totalCost)
+                            .purchaseCount((long) productList.size())
+                            .averagePricePerUnit(avgPricePerUnit)
+                            .weekStart(startDate) // Pour compatibilité
+                            .purchaseDetails(details)
+                            .build();
+                })
+                .collect(Collectors.toList());
 
         // Trier selon les critères
         Comparator<ConsumptionDTO> comparator = getComparator(sortBy);
@@ -210,11 +235,11 @@ public class ConsumptionService {
         List<ConsumptionStatistic> stats = consumptionRepository.getTopProductsByWeek(weekStart);
 
         return stats.stream()
-            .collect(Collectors.toMap(
-                ConsumptionStatistic::getCategory,
-                this::mapToDTO,
-                (existing, replacement) -> existing
-            ));
+                .collect(Collectors.toMap(
+                        ConsumptionStatistic::getCategory,
+                        this::mapToDTO,
+                        (existing, replacement) -> existing
+                ));
     }
 
     private LocalDate getWeekStart(LocalDate date) {
@@ -225,19 +250,19 @@ public class ConsumptionService {
         BigDecimal avgPrice = BigDecimal.ZERO;
         if (statistic.getTotalQuantity().compareTo(BigDecimal.ZERO) > 0) {
             avgPrice = statistic.getTotalCost()
-                .divide(statistic.getTotalQuantity(), 2, RoundingMode.HALF_UP);
+                    .divide(statistic.getTotalQuantity(), 2, RoundingMode.HALF_UP);
         }
 
         return ConsumptionDTO.builder()
-            .productName(statistic.getProductName())
-            .weekStart(statistic.getWeekStart())
-            .totalQuantity(statistic.getTotalQuantity())
-            .totalCost(statistic.getTotalCost())
-            .purchaseCount(statistic.getPurchaseCount())
-            .category(statistic.getCategory())
-            .unit(statistic.getUnit())
-            .averagePricePerUnit(avgPrice)
-            .build();
+                .productName(statistic.getProductName())
+                .weekStart(statistic.getWeekStart())
+                .totalQuantity(statistic.getTotalQuantity())
+                .totalCost(statistic.getTotalCost())
+                .purchaseCount(statistic.getPurchaseCount())
+                .category(statistic.getCategory())
+                .unit(statistic.getUnit())
+                .averagePricePerUnit(avgPrice)
+                .build();
     }
 }
 

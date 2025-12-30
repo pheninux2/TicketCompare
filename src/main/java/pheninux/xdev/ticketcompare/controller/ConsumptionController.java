@@ -1,6 +1,7 @@
 package pheninux.xdev.ticketcompare.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +14,7 @@ import java.time.temporal.WeekFields;
 @Controller
 @RequestMapping("/consumption")
 @RequiredArgsConstructor
+@Slf4j
 public class ConsumptionController {
     private final ConsumptionService consumptionService;
 
@@ -26,17 +28,25 @@ public class ConsumptionController {
             @RequestParam(required = false) String sortOrder,
             Model model) {
 
+        log.info("===== FILTRAGE CONSOMMATION =====");
+        log.info("Paramètres reçus - period: {}, startDate: {}, endDate: {}, search: {}", period, startDate, endDate, search);
+        log.info("Date actuelle (LocalDate.now()): {}", LocalDate.now());
+
         // Déterminer la période
         if (startDate == null || endDate == null) {
             if ("month".equals(period)) {
                 // Mois actuel
                 startDate = LocalDate.now().withDayOfMonth(1);
                 endDate = LocalDate.now().with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
+                log.info("Période MOIS calculée - startDate: {}, endDate: {}", startDate, endDate);
             } else {
                 // Semaine actuelle par défaut
                 startDate = LocalDate.now().with(WeekFields.ISO.dayOfWeek(), 1);
                 endDate = startDate.plusDays(6);
+                log.info("Période SEMAINE calculée - startDate: {}, endDate: {}", startDate, endDate);
             }
+        } else {
+            log.info("Période PERSONNALISÉE - startDate: {}, endDate: {}", startDate, endDate);
         }
 
         // Valeurs par défaut pour le tri
@@ -44,6 +54,9 @@ public class ConsumptionController {
         if (sortOrder == null) sortOrder = "desc";
 
         var consumption = consumptionService.getProductConsumption(startDate, endDate, search, sortBy, sortOrder);
+
+        log.info("Nombre de produits trouvés: {}", consumption.size());
+        log.info("=================================");
 
         // Grouper par catégorie pour l'affichage
         var consumptionByCategory = consumption.stream()
