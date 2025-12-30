@@ -1,225 +1,255 @@
 #!/bin/bash
 # ==========================================
-# Script de Déploiement - ShopTracker
-# VPS DigitalOcean
+# Script de Deploiement - ShopTracker
+# Utilise environments/prod/
 # ==========================================
 
 set -e
 
 echo ""
 echo "========================================="
-echo "   ShopTracker - Déploiement           "
+echo "   ShopTracker - Deploiement VPS       "
 echo "========================================="
 echo ""
 
-# Vérifier que le script est exécuté par deployer ou root
-if [ "$USER" != "deployer" ] && [ "$USER" != "root" ]; then
-    echo "[ERREUR] Ce script doit être exécuté par l'utilisateur 'deployer' ou 'root'"
-    exit 1
-fi
-
+# Variables
 APP_DIR="/opt/shoptracker/app"
-SCRIPTS_DIR="/opt/shoptracker/scripts"
-NGINX_CONF="/etc/nginx/sites-available/shoptracker"
+PROD_DIR="$APP_DIR/environments/prod"
+ENV_FILE="$PROD_DIR/.env"
+COMPOSE_FILE="$PROD_DIR/docker-compose.yml"
 
-echo "[*] Vérification des prérequis..."
+# Verifier que le script est execute par root
+if [ "$USER" != "root" ]; then
+    echo "[ERREUR] Ce script doit etre execute par root"
+    echo "Executez: exit, puis relancez ce script"
+    exit 1
+fi
 
-# Vérifier Docker
+echo "[*] Verification des prerequis..."
+
+# Verifier Docker
 if ! command -v docker &> /dev/null; then
-    echo "[ERREUR] Docker n'est pas installé. Exécutez d'abord setup-vps.sh"
+    echo "[ERREUR] Docker n'est pas installe"
     exit 1
 fi
 
-# Vérifier Nginx
-if ! command -v nginx &> /dev/null; then
-    echo "[ERREUR] Nginx n'est pas installé. Exécutez d'abord setup-vps.sh"
+# Verifier Docker Compose
+if ! command -v docker &> /dev/null || ! docker compose version &> /dev/null; then
+    echo "[ERREUR] Docker Compose n'est pas installe"
     exit 1
 fi
 
-echo "[OK] Prérequis vérifiés"
-
-echo ""
-echo "========================================="
-echo "   Clonage du Repository                "
-echo "========================================="
-echo ""
-
-if [ -d "$APP_DIR" ]; then
-    echo "[*] Le dossier existe déjà, mise à jour..."
-    cd "$APP_DIR"
-    git pull origin main
-else
-    echo "[*] Clonage du repository..."
-    echo "[INFO] Entrez l'URL de votre repository GitHub:"
-    read -r REPO_URL
-
-    git clone "$REPO_URL" "$APP_DIR"
-    cd "$APP_DIR"
+# Verifier Git
+if ! command -v git &> /dev/null; then
+    echo "[ERREUR] Git n'est pas installe"
+    exit 1
 fi
 
-echo "[OK] Code récupéré"
-
-echo ""
-echo "========================================="
-echo "   Configuration de l'environnement     "
-echo "========================================="
+echo "[OK] Prerequis verifies"
 echo ""
 
-# Vérifier si .env existe déjà
-if [ -f "$APP_DIR/deploy/.env.production" ]; then
-    echo "[OK] Fichier .env.production existe déjà"
+# ==========================================
+# Clonage/Mise a jour du Repository
+# ==========================================
+
+echo "========================================="
+echo "   Repository Git                       "
+echo "========================================="
+echo ""
+
+if [ -d "$APP_DIR/.git" ]; then
+    echo "[*] Repository Git existe, mise a jour..."
+
+    # Ajouter le repertoire aux dossiers Git surs
+    git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
+
+    # Corriger les permissions
+    chown -R root:root "$APP_DIR" 2>/dev/null || true
+
+    cd "$APP_DIR"
+    git pull origin main || git pull origin master
 else
-    echo "[*] Création du fichier .env.production..."
-
-    # Copier le template
-    cp "$APP_DIR/deploy/.env.production.template" "$APP_DIR/deploy/.env.production"
-
-    # Récupérer les credentials générés
-    if [ -f "/root/credentials/app_credentials.txt" ]; then
-        DB_PASSWORD=$(grep "DB_PASSWORD=" /root/credentials/app_credentials.txt | cut -d'=' -f2)
-        ADMIN_PASSWORD=$(grep "ADMIN_PASSWORD=" /root/credentials/app_credentials.txt | cut -d'=' -f2)
-        JWT_SECRET=$(grep "JWT_SECRET=" /root/credentials/app_credentials.txt | cut -d'=' -f2)
-
-        # Remplacer les placeholders
-        sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" "$APP_DIR/deploy/.env.production"
-        sed -i "s|ADMIN_PASSWORD=.*|ADMIN_PASSWORD=$ADMIN_PASSWORD|" "$APP_DIR/deploy/.env.production"
-        sed -i "s|JWT_SECRET=.*|JWT_SECRET=$JWT_SECRET|" "$APP_DIR/deploy/.env.production"
-
-        echo "[OK] Variables d'environnement configurées"
-    else
-        echo "[AVERTISSEMENT] Credentials non trouvés. Éditez manuellement .env.production"
+    if [ -d "$APP_DIR" ]; then
+        echo "[ATTENTION] Le dossier existe mais n'est pas un repository Git"
+        echo "[*] Suppression et clone du repository..."
+        rm -rf "$APP_DIR"
     fi
+
+    echo "[*] Clonage du repository..."
+    echo "[INFO] URL du repository GitHub:"
+    echo "https://github.com/pheninux2/TicketCompare.git"
+    echo ""
+
+    git clone https://github.com/pheninux2/TicketCompare.git "$APP_DIR"
+    cd "$APP_DIR"
 fi
 
-# Copier le fichier .env pour Docker Compose
-cp "$APP_DIR/deploy/.env.production" "$APP_DIR/deploy/.env"
-
-echo ""
-echo "========================================="
-echo "   Configuration de Nginx               "
-echo "========================================="
+echo "[OK] Code recupere"
 echo ""
 
-echo "[*] Installation de la configuration Nginx..."
+# ==========================================
+# Configuration environnement
+# ==========================================
 
-# Copier la configuration
-sudo cp "$APP_DIR/deploy/nginx/shoptracker.conf" "$NGINX_CONF"
+echo "========================================="
+echo "   Configuration Environnement          "
+echo "========================================="
+echo ""
 
-# Activer le site
-sudo ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/shoptracker
+# Creer le dossier prod/data et backups
+mkdir -p "$PROD_DIR/data/postgres"
+mkdir -p "$PROD_DIR/backups"
+mkdir -p "$PROD_DIR/logs"
 
-# Supprimer le site par défaut
-sudo rm -f /etc/nginx/sites-enabled/default
+# Copier .env si n'existe pas
+if [ ! -f "$ENV_FILE" ]; then
+    if [ -f "$PROD_DIR/.env.example" ]; then
+        echo "[*] Creation du fichier .env..."
+        cp "$PROD_DIR/.env.example" "$ENV_FILE"
+    else
+        echo "[*] Creation du fichier .env..."
+        cat > "$ENV_FILE" << 'EOF'
+# Database
+DB_PASSWORD=ShopTracker2025!Secure
 
-# Tester la configuration
-echo "[*] Test de la configuration Nginx..."
-sudo nginx -t
+# Admin
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
 
-if [ $? -eq 0 ]; then
-    echo "[OK] Configuration Nginx valide"
-    sudo systemctl reload nginx
-    echo "[OK] Nginx rechargé"
+# JWT
+JWT_SECRET=your-secret-key-change-in-production
+
+# Email
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+
+# Stripe (optionnel)
+STRIPE_API_KEY=
+STRIPE_WEBHOOK_SECRET=
+EOF
+    fi
+    echo "[OK] Fichier .env cree"
+    echo "[ATTENTION] Modifiez les mots de passe dans $ENV_FILE"
 else
-    echo "[ERREUR] Configuration Nginx invalide"
-    exit 1
+    echo "[OK] Fichier .env existe deja"
 fi
 
 echo ""
+
+# ==========================================
+# Configuration Nginx
+# ==========================================
+
+echo "========================================="
+echo "   Configuration Nginx                  "
+echo "========================================="
+echo ""
+
+NGINX_CONF_FILE="$PROD_DIR/nginx/shoptracker.conf"
+
+if [ -f "$NGINX_CONF_FILE" ]; then
+    echo "[*] Installation de la configuration Nginx..."
+
+    # Copier la configuration
+    cp "$NGINX_CONF_FILE" /etc/nginx/sites-available/shoptracker
+
+    # Activer le site
+    ln -sf /etc/nginx/sites-available/shoptracker /etc/nginx/sites-enabled/shoptracker
+
+    # Supprimer le site par defaut
+    rm -f /etc/nginx/sites-enabled/default
+
+    # Tester la configuration
+    echo "[*] Test de la configuration Nginx..."
+    if nginx -t; then
+        echo "[OK] Configuration Nginx valide"
+        systemctl reload nginx
+        echo "[OK] Nginx recharge"
+    else
+        echo "[ERREUR] Configuration Nginx invalide"
+        exit 1
+    fi
+else
+    echo "[ATTENTION] Configuration Nginx non trouvee dans $NGINX_CONF_FILE"
+    echo "[INFO] Creez le fichier ou l'application sera accessible uniquement via IP"
+fi
+
+echo ""
+
+# ==========================================
+# Build de l'application
+# ==========================================
+
 echo "========================================="
 echo "   Build de l'Application               "
 echo "========================================="
 echo ""
 
-cd "$APP_DIR"
+cd "$PROD_DIR"
+
+echo "[*] Arret des conteneurs existants..."
+docker compose down 2>/dev/null || true
 
 echo "[*] Build de l'image Docker..."
-echo "[INFO] Cette étape peut prendre 5-10 minutes..."
+echo "[INFO] Cette etape peut prendre 5-10 minutes..."
+docker compose build --no-cache
 
-# Build avec Docker Compose
-docker compose -f deploy/docker-compose.prod.yml build --no-cache
-
-echo "[OK] Image construite avec succès"
-
-echo ""
-echo "========================================="
-echo "   Démarrage des Services               "
-echo "========================================="
+echo "[OK] Image construite avec succes"
 echo ""
 
-echo "[*] Arrêt des anciens conteneurs..."
-docker compose -f deploy/docker-compose.prod.yml down 2>/dev/null || true
+# ==========================================
+# Demarrage des services
+# ==========================================
 
-echo "[*] Démarrage des services..."
-docker compose -f deploy/docker-compose.prod.yml up -d
+echo "========================================="
+echo "   Demarrage des Services               "
+echo "========================================="
+echo ""
 
-echo "[*] Attente du démarrage (30 secondes)..."
+echo "[*] Demarrage des conteneurs..."
+docker compose up -d
+
+echo ""
+echo "[*] Attente du demarrage (30 secondes)..."
 sleep 30
 
+# Verifier les services
 echo ""
-echo "========================================="
-echo "   Vérification du Déploiement          "
-echo "========================================="
-echo ""
+echo "[*] Verification des services..."
 
-# Vérifier PostgreSQL
-echo "[*] Vérification de PostgreSQL..."
-if docker exec shoptracker-db pg_isready -U shoptracker_admin > /dev/null 2>&1; then
-    echo "✅ PostgreSQL est opérationnel"
+if docker ps | grep -q shoptracker-db; then
+    echo "[OK] PostgreSQL est operationnel"
 else
-    echo "❌ PostgreSQL n'est pas accessible"
+    echo "[ERREUR] PostgreSQL n'a pas demarre"
 fi
 
-# Vérifier l'application
-echo "[*] Vérification de l'application..."
-if curl -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
-    echo "✅ Application Spring Boot est opérationnelle"
+if docker ps | grep -q shoptracker-app; then
+    echo "[OK] Application est operationnelle"
 else
-    echo "⚠️  Application Spring Boot démarre encore (peut prendre jusqu'à 2 minutes)"
+    echo "[ERREUR] Application n'a pas demarre"
 fi
 
-# Vérifier Nginx
-echo "[*] Vérification de Nginx..."
-if curl -s http://localhost > /dev/null 2>&1; then
-    echo "✅ Nginx est opérationnel"
-else
-    echo "❌ Nginx n'est pas accessible"
-fi
+# Afficher les logs
+echo ""
+echo "[*] Derniers logs de l'application:"
+docker compose logs --tail=20 app
 
 echo ""
 echo "========================================="
-echo "   Logs des Services                    "
+echo "   Deploiement Termine !                "
 echo "========================================="
 echo ""
-
-echo "Dernières lignes des logs de l'application:"
-docker compose -f deploy/docker-compose.prod.yml logs --tail=20 app
-
+echo "Application accessible sur:"
+echo "  http://$(curl -s ifconfig.me 2>/dev/null || echo 'VOTRE_IP')"
 echo ""
-echo "========================================="
-echo "   Déploiement Terminé ! ✅             "
-echo "========================================="
+echo "Commandes utiles:"
+echo "  docker compose logs -f app           # Voir les logs"
+echo "  docker compose ps                    # Statut des conteneurs"
+echo "  docker compose restart app           # Redemarrer l'app"
+echo "  docker compose down                  # Arreter tous les services"
 echo ""
-
-# Récupérer l'IP publique
-PUBLIC_IP=$(curl -s ifconfig.me)
-
-echo "🌐 Votre application est accessible à:"
-echo "   http://$PUBLIC_IP"
-echo ""
-echo "🔐 Credentials Admin:"
-echo "   Username: admin"
-echo "   Password: Voir /root/credentials/app_credentials.txt"
-echo ""
-echo "📊 Commandes utiles:"
-echo "   - Voir les logs:        docker compose -f deploy/docker-compose.prod.yml logs -f"
-echo "   - Redémarrer l'app:     docker compose -f deploy/docker-compose.prod.yml restart"
-echo "   - Arrêter les services: docker compose -f deploy/docker-compose.prod.yml down"
-echo "   - Status des services:  docker compose -f deploy/docker-compose.prod.yml ps"
-echo ""
-echo "💾 Backup automatique configuré à 2h du matin"
-echo ""
-echo "📝 Pour activer HTTPS avec un domaine:"
-echo "   1. Pointez votre domaine vers $PUBLIC_IP"
-echo "   2. Exécutez: sudo certbot --nginx -d votre-domaine.com"
+echo "Fichiers de configuration:"
+echo "  $ENV_FILE"
+echo "  $COMPOSE_FILE"
 echo ""
 

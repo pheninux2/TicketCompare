@@ -1,9 +1,8 @@
 # ===================================
-# ShopTracker - Production Windows
+# ShopTracker - Production VPS
 # Docker Compose avec PostgreSQL
 # ===================================
 
-version: '3.8'
 
 services:
   # Base de données PostgreSQL
