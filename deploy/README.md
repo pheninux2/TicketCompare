@@ -13,7 +13,44 @@ SSD: 50 GB
 
 ---
 
-## 🎯 Vue d'Ensemble
+## 🎯 Deux Modes de Déploiement
+
+### 1️⃣ Mode Classique (Build sur VPS)
+Clone le code source et build l'image Docker directement sur le VPS.
+
+**Utilisation:** Voir la section "Déploiement Rapide (Quick Start)" ci-dessous.
+
+### 2️⃣ Mode Image Pré-construite (Recommandé) ⭐
+
+Utilise des images Docker construites automatiquement par GitHub Actions.
+
+**Avantages:**
+- ✅ Pas besoin de cloner tout le code
+- ✅ Build plus rapide (fait par GitHub)
+- ✅ Moins d'espace disque
+- ✅ Support multi-applications
+
+**Scripts:**
+- `deploy-image.sh` - Déploiement avec image GHCR
+- `update-image.sh` - Mise à jour rapide
+- `push-to-github.ps1` - Push depuis Windows
+
+**📖 Documentation complète:** Voir **`GUIDE_MULTI_APPS.md`** pour le mode image et multi-applications.
+
+---
+
+## 📦 Support Multi-Applications
+
+Vous pouvez héberger plusieurs applications sur le même VPS :
+- `http://178.128.162.253/app1/` → Application 1
+- `http://178.128.162.253/app2/` → Application 2
+- `http://178.128.162.253/app3/` → Application 3
+
+Configuration Nginx incluse dans `environments/prod/nginx/multi-app.conf`
+
+---
+
+## 🎯 Vue d'Ensemble (Mode Classique)
 
 Ce guide vous accompagne pour déployer **ShopTracker** sur votre VPS DigitalOcean en **3 étapes simples**.
 
@@ -30,9 +67,13 @@ Ce guide vous accompagne pour déployer **ShopTracker** sur votre VPS DigitalOce
 ```
 deploy/
 ├── README.md                      # Ce fichier
+├── GUIDE_MULTI_APPS.md           # Guide multi-applications (NEW)
 ├── setup-vps.sh                   # 1️⃣ Installation initiale VPS
-├── deploy-app.sh                  # 2️⃣ Déploiement de l'application
-├── update-app.sh                  # Mise à jour de l'application
+├── deploy-app.sh                  # 2️⃣ Déploiement classique
+├── deploy-image.sh                # 2️⃣ Déploiement avec image (NEW)
+├── update-app.sh                  # Mise à jour classique
+├── update-image.sh                # Mise à jour rapide (NEW)
+├── push-to-github.ps1             # Push depuis Windows (NEW)
 ├── backup.sh                      # Backup manuel de la BDD
 ├── restore.sh                     # Restauration de la BDD
 ├── monitor.sh                     # Monitoring du système

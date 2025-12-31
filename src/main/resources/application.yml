@@ -64,9 +64,19 @@ spring:
 # ===================================
 server:
   port: 8080
+  servlet:
+    context-path: /
+  forward-headers-strategy: framework
+  tomcat:
+    # Configuration pour reverse proxy (Nginx)
+    remoteip:
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
+      internal-proxies: 10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|172\\.(1[6-9]|2\\d|3[01])\\.\\d{1,3}\\.\\d{1,3}|192\\.168\\.\\d{1,3}\\.\\d{1,3}|100\\.([6-9]\\d|1[0-2]\\d)\\.\\d{1,3}\\.\\d{1,3}
   error:
     include-message: always
     include-binding-errors: always
+    include-stacktrace: on_param
 
 # ===================================
 # Actuator (Health checks)
