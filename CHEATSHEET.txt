@@ -1,0 +1,126 @@
+════════════════════════════════════════════════════════════
+  AIDE-MÉMOIRE ULTRA-RAPIDE - Multi-App Deployment
+════════════════════════════════════════════════════════════
+
+📌 VOS QUESTIONS → RÉSOLUES !
+
+1️⃣  Plusieurs apps ? → OUI !
+    http://178.128.162.253/app1/
+    http://178.128.162.253/app2/
+    http://178.128.162.253/app3/
+
+2️⃣  Pull image seulement ? → OUI !
+    GitHub Actions → build auto → pull sur VPS
+
+════════════════════════════════════════════════════════════
+
+🚀 COMMENCER MAINTENANT (3 étapes)
+
+Windows:
+  cd C:\Users\pheni\IdeaProjects\TicketCompare
+  .\deploy\push-to-github.ps1
+
+GitHub:
+  https://github.com/pheninux2/TicketCompare/actions
+  (Attendre ~5-10 min)
+
+VPS:
+  ssh root@178.128.162.253
+  curl -sL bit.ly/your-deploy | bash
+  # OU manuellement:
+  mkdir -p /opt/shoptracker/app1 && cd $_
+  curl -o deploy.sh https://raw.githubusercontent.com/pheninux2/TicketCompare/main/deploy/deploy-image.sh
+  chmod +x deploy.sh && ./deploy.sh
+
+════════════════════════════════════════════════════════════
+
+📚 DOCUMENTATION (lisez dans cet ordre)
+
+1. deploy/QUICK_START.md              ⭐ Commencez ici !
+2. deploy/GUIDE_MULTI_APPS.md         📖 Guide complet
+3. deploy/SPRING_PROXY_CONFIG.md      🔧 Config avancée
+4. SUMMARY.txt                        📋 Ce fichier détaillé
+
+════════════════════════════════════════════════════════════
+
+⚡ COMMANDES ESSENTIELLES
+
+VPS - Gestion:
+  ./update.sh app1                    # Mettre à jour
+  docker logs -f shoptracker-app1     # Logs
+  docker ps                           # Statut
+  ./commands.sh help                  # Toutes les commandes
+
+VPS - Dépannage:
+  curl http://localhost:8080/actuator/health
+  docker compose -f docker-compose-pull.yml restart
+  tail -f /var/log/nginx/multi_app_error.log
+
+Windows - Git:
+  git add .
+  git commit -m "feat: multi-app deployment"
+  git push
+
+════════════════════════════════════════════════════════════
+
+🎯 STRUCTURE FINALE
+
+VPS:
+  /opt/shoptracker/
+    ├── app1/ (port 8080) → /app1/
+    ├── app2/ (port 8081) → /app2/
+    └── app3/ (port 8082) → /app3/
+
+GitHub:
+  ghcr.io/pheninux2/ticketcompare:latest
+
+Accès:
+  http://178.128.162.253/         → Index
+  http://178.128.162.253/app1/    → App1
+
+════════════════════════════════════════════════════════════
+
+💾 FICHIERS CRÉÉS (13 nouveaux fichiers)
+
+Scripts:
+  ✅ deploy/deploy-image.sh          Déploiement
+  ✅ deploy/update-image.sh          Mise à jour
+  ✅ deploy/commands.sh              Aide
+  ✅ deploy/push-to-github.ps1       Push Git
+  ✅ deploy/check-before-push.ps1    Vérif
+
+Docs:
+  ✅ deploy/QUICK_START.md           Quick start
+  ✅ deploy/GUIDE_MULTI_APPS.md      Guide complet
+  ✅ deploy/SPRING_PROXY_CONFIG.md   Config Spring
+  ✅ CHANGES.md                      Changelog
+  ✅ README_DEPLOYMENT.md            Vue d'ensemble
+  ✅ SUMMARY.txt                     Résumé détaillé
+
+Config:
+  ✅ .github/workflows/docker-build.yml
+  ✅ environments/prod/nginx/multi-app.conf
+
+════════════════════════════════════════════════════════════
+
+🆘 PROBLÈMES COURANTS
+
+Image ne pull pas?
+  docker pull ghcr.io/pheninux2/ticketcompare:latest
+  # Si privée: export GITHUB_TOKEN=ghp_xxx
+
+App ne répond pas?
+  docker logs shoptracker-app1
+  docker restart shoptracker-app1
+
+Nginx 502?
+  nginx -t
+  systemctl status nginx
+  tail -f /var/log/nginx/multi_app_error.log
+
+════════════════════════════════════════════════════════════
+
+✨ DONE ! Suivez deploy/QUICK_START.md pour commencer !
+
+════════════════════════════════════════════════════════════
+
