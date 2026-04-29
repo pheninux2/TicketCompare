@@ -34,9 +34,10 @@ public class LicenseCheckInterceptor implements HandlerInterceptor {
                             Object handler) throws Exception {
 
         String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath();
 
-        // Ignorer les chemins exclus
-        if (isExcludedPath(requestURI)) {
+        // Ignorer les chemins exclus (getServletPath retourne le chemin sans context-path)
+        if (isExcludedPath(request.getServletPath())) {
             return true;
         }
 
@@ -44,7 +45,7 @@ public class LicenseCheckInterceptor implements HandlerInterceptor {
 
         if (session == null) {
             log.debug("Pas de session - redirection vers login");
-            response.sendRedirect("/auth/login?redirect=" + requestURI);
+            response.sendRedirect(contextPath + "/auth/login?redirect=" + requestURI);
             return false;
         }
 
@@ -52,7 +53,7 @@ public class LicenseCheckInterceptor implements HandlerInterceptor {
 
         if (user == null) {
             log.debug("Utilisateur non connecté - redirection vers login");
-            response.sendRedirect("/auth/login?redirect=" + requestURI);
+            response.sendRedirect(contextPath + "/auth/login?redirect=" + requestURI);
             return false;
         }
 
@@ -60,7 +61,7 @@ public class LicenseCheckInterceptor implements HandlerInterceptor {
         if (!user.hasActiveLicense()) {
             log.warn("Utilisateur {} sans licence active tente d'accéder à {}",
                     user.getEmail(), requestURI);
-            response.sendRedirect("/pricing");
+            response.sendRedirect(contextPath + "/pricing");
             return false;
         }
 

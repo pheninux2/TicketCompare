@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ticketcompare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ticketcompare
+      POSTGRES_USER: ticketuser
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - tc-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticketuser -d ticketcompare"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: ghcr.io/pheninux2/ticketcompare:latest
+    container_name: ticketcompare-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ticketcompare
+      SPRING_DATASOURCE_USERNAME: ticketuser
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SERVER_SERVLET_CONTEXT_PATH: /app/ticketCompare
+      JWT_SECRET: ${JWT_SECRET}
+      APP_BASE_URL: https://caizon.co/app/ticketCompare
+    volumes:
+      - ./data/uploads:/app/uploads
+      - ./data/logs:/app/logs
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - tc-network
+
+networks:
+  tc-network:
+    driver: bridge
