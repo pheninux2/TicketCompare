@@ -244,7 +244,7 @@
 
         async function processPayment(token) {
             try {
-                const response = await fetch('/payment/process', {
+                const response = await fetch(contextPath + '/payment/process', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -256,7 +256,7 @@
                 });
 
                 if (response.ok) {
-                    window.location.href = '/payment/success';
+                    window.location.href = contextPath + '/payment/success';
                 } else {
                     alert('Erreur lors du paiement. Veuillez réessayer.');
                     document.getElementById('payment-button').disabled = false;

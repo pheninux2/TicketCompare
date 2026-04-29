@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -31,12 +31,12 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <a class="navbar-brand" th:href="@{/}">📊 TicketCompare</a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/tickets">Tickets</a>
-                <a class="nav-link" href="/statistics/dashboard">Statistiques</a>
-                <a class="nav-link" href="/consumption/weekly">Consommation</a>
-                <a class="nav-link active" href="/analysis/forecast">Prédictions</a>
+                <a class="nav-link" th:href="@{/tickets}">Tickets</a>
+                <a class="nav-link" th:href="@{/statistics/dashboard}">Statistiques</a>
+                <a class="nav-link" th:href="@{/consumption/weekly}">Consommation</a>
+                <a class="nav-link active" th:href="@{/analysis/forecast}">Prédictions</a>
             </div>
         </div>
     </nav>
@@ -54,7 +54,7 @@
                 </button>
             </div>
             <div class="col-md-3 text-end">
-                <button class="btn btn-success" onclick="window.location.href='/analysis/consumption-forecast'">
+                <button class="btn btn-success" onclick="window.location.href=contextPath+'/analysis/consumption-forecast'">
                     <i class="fas fa-shopping-cart"></i> Prédiction Consommation
                 </button>
             </div>

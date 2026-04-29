@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -11,15 +11,15 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <a class="navbar-brand" th:href="@{/}">📊 TicketCompare</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/tickets}">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/statistics/dashboard}">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/consumption/weekly}">Consommation</a></li>
                 </ul>
             </div>
         </div>
@@ -32,7 +32,7 @@
                 <p class="text-muted">Ajoutez un ticket de caisse et ses produits</p>
             </div>
             <div class="col-md-4 text-end">
-                <a href="/tickets" class="btn btn-secondary">
+                <a th:href="@{/tickets}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Retour
                 </a>
             </div>
@@ -129,7 +129,7 @@
                     <hr class="my-4">
 
                     <div class="d-flex justify-content-between">
-                        <a href="/tickets" class="btn btn-secondary">
+                        <a th:href="@{/tickets}" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Annuler
                         </a>
                         <button type="submit" class="btn btn-success btn-lg">

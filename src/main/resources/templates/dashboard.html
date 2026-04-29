@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -121,22 +121,22 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <a href="/tickets/create" class="btn btn-lg btn-primary w-100">
+                                <a th:href="@{/tickets/create}" class="btn btn-lg btn-primary w-100">
                                     <i class="fas fa-plus"></i> Nouveau ticket
                                 </a>
                             </div>
                             <div class="col-md-6">
-                                <a href="/tickets" class="btn btn-lg btn-outline-primary w-100">
+                                <a th:href="@{/tickets}" class="btn btn-lg btn-outline-primary w-100">
                                     <i class="fas fa-list"></i> Mes tickets
                                 </a>
                             </div>
                             <div class="col-md-6">
-                                <a href="/statistics/dashboard" class="btn btn-lg btn-outline-success w-100">
+                                <a th:href="@{/statistics/dashboard}" class="btn btn-lg btn-outline-success w-100">
                                     <i class="fas fa-chart-bar"></i> Statistiques
                                 </a>
                             </div>
                             <div class="col-md-6">
-                                <a href="/compare" class="btn btn-lg btn-outline-warning w-100">
+                                <a th:href="@{/compare}" class="btn btn-lg btn-outline-warning w-100">
                                     <i class="fas fa-balance-scale"></i> Comparaison
                                 </a>
                             </div>
@@ -153,7 +153,7 @@
                         <div class="text-center text-muted py-4">
                             <i class="fas fa-inbox fa-3x mb-3"></i>
                             <p>Aucune activité pour le moment.</p>
-                            <a href="/tickets/create" class="btn btn-primary">
+                            <a th:href="@{/tickets/create}" class="btn btn-primary">
                                 Commencer maintenant
                             </a>
                         </div>
@@ -192,10 +192,10 @@
                         </div>
 
                         <div class="d-grid gap-2 mt-3">
-                            <a href="/license" class="btn btn-outline-primary btn-sm">
+                            <a th:href="@{/license}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-info-circle"></i> Détails
                             </a>
-                            <a href="/pricing" class="btn btn-success btn-sm" th:if="${isOnTrial}">
+                            <a th:href="@{/pricing}" class="btn btn-success btn-sm" th:if="${isOnTrial}">
                                 <i class="fas fa-upgrade"></i> Passer au premium
                             </a>
                         </div>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -129,14 +129,14 @@
                             <i class="fas fa-exclamation-triangle"></i>
                             <strong>Attention !</strong> Votre licence expire dans
                             <span th:text="${daysRemaining}">7</span> jours.
-                            <a href="/pricing" class="alert-link">Renouvelez maintenant</a> pour continuer à profiter de ShopTracker.
+                            <a th:href="@{/pricing}" class="alert-link">Renouvelez maintenant</a> pour continuer à profiter de ShopTracker.
                         </div>
 
                         <!-- Alerte si expiré -->
                         <div th:if="${isExpired}" class="alert alert-danger mt-3">
                             <i class="fas fa-times-circle"></i>
                             <strong>Licence expirée !</strong>
-                            <a href="/pricing" class="alert-link">Renouvelez votre licence</a> pour continuer à utiliser ShopTracker.
+                            <a th:href="@{/pricing}" class="alert-link">Renouvelez votre licence</a> pour continuer à utiliser ShopTracker.
                         </div>
                     </div>
                 </div>
@@ -149,15 +149,15 @@
                         </h5>
 
                         <div class="d-grid gap-2">
-                            <a href="/dashboard" class="btn btn-primary">
+                            <a th:href="@{/dashboard}" class="btn btn-primary">
                                 <i class="fas fa-tachometer-alt"></i> Retour au Dashboard
                             </a>
 
-                            <a href="/pricing" class="btn btn-success" th:if="${license.licenseType.name() == 'TRIAL'}">
+                            <a th:href="@{/pricing}" class="btn btn-success" th:if="${license.licenseType.name() == 'TRIAL'}">
                                 <i class="fas fa-upgrade"></i> Passer à un plan payant
                             </a>
 
-                            <a href="/pricing" class="btn btn-outline-primary" th:if="${license.licenseType.name() != 'LIFETIME'}">
+                            <a th:href="@{/pricing}" class="btn btn-outline-primary" th:if="${license.licenseType.name() != 'LIFETIME'}">
                                 <i class="fas fa-sync-alt"></i> Renouveler ma licence
                             </a>
 

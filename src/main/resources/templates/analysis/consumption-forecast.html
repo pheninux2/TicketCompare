@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -23,13 +23,13 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <a class="navbar-brand" th:href="@{/}">📊 TicketCompare</a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/tickets">Tickets</a>
-                <a class="nav-link" href="/statistics/dashboard">Statistiques</a>
-                <a class="nav-link" href="/consumption/weekly">Consommation</a>
-                <a class="nav-link" href="/analysis/forecast">Prédiction Prix</a>
-                <a class="nav-link active" href="/analysis/consumption-forecast">Prédiction Consommation</a>
+                <a class="nav-link" th:href="@{/tickets}">Tickets</a>
+                <a class="nav-link" th:href="@{/statistics/dashboard}">Statistiques</a>
+                <a class="nav-link" th:href="@{/consumption/weekly}">Consommation</a>
+                <a class="nav-link" th:href="@{/analysis/forecast}">Prédiction Prix</a>
+                <a class="nav-link active" th:href="@{/analysis/consumption-forecast}">Prédiction Consommation</a>
             </div>
         </div>
     </nav>
@@ -47,7 +47,7 @@
                 </button>
             </div>
             <div class="col-md-3 text-end">
-                <a href="/analysis/forecast" class="btn btn-outline-primary">
+                <a th:href="@{/analysis/forecast}" class="btn btn-outline-primary">
                     <i class="fas fa-chart-line"></i> Prédiction Prix
                 </a>
             </div>

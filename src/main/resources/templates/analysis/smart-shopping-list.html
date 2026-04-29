@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -67,16 +67,16 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <a class="navbar-brand" th:href="@{/}">📊 TicketCompare</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/statistics/dashboard">Statistiques</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/compare">Comparaison</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/tickets}">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/statistics/dashboard}">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/consumption/weekly}">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/compare}">Comparaison</a></li>
                 </ul>
             </div>
         </div>
@@ -295,7 +295,7 @@
                 console.log('📡 Appel API consumption-analysis...');
 
                 // Récupérer l'analyse
-                const analysisResponse = await fetch('/analysis/api/consumption-analysis');
+                const analysisResponse = await fetch(contextPath + '/analysis/api/consumption-analysis');
 
                 if (!analysisResponse.ok) {
                     throw new Error(`Erreur HTTP ${analysisResponse.status}: ${analysisResponse.statusText}`);
@@ -307,7 +307,7 @@
                 console.log('📡 Appel API smart-shopping-list...');
 
                 // Récupérer la liste
-                const listResponse = await fetch('/analysis/api/smart-shopping-list');
+                const listResponse = await fetch(contextPath + '/analysis/api/smart-shopping-list');
 
                 if (!listResponse.ok) {
                     throw new Error(`Erreur HTTP ${listResponse.status}: ${listResponse.statusText}`);

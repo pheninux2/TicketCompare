@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -32,9 +32,9 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <a class="navbar-brand" th:href="@{/}">📊 TicketCompare</a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/tickets">Tickets</a>
+                <a class="nav-link" th:href="@{/tickets}">Tickets</a>
             </div>
         </div>
     </nav>
@@ -46,7 +46,7 @@
             </div>
             <div class="col-md-4 text-end">
                 <a th:href="@{/tickets/{id}/edit(id=${ticket.id})}" class="btn btn-warning">Éditer</a>
-                <a href="/tickets" class="btn btn-secondary">Retour</a>
+                <a th:href="@{/tickets}" class="btn btn-secondary">Retour</a>
             </div>
         </div>
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -19,10 +19,10 @@
             <p class="lead">Smart Receipt Intelligence - Analysez vos tickets intelligemment, comparez les prix et optimisez vos dépenses</p>
             <hr class="my-4">
             <p>Commencez par créer votre premier ticket ou explorez les statistiques intelligentes</p>
-            <a class="btn btn-primary btn-lg me-2" href="/tickets/create" role="button">
+            <a class="btn btn-primary btn-lg me-2" th:href="@{/tickets/create}" role="button">
                 <i class="fas fa-plus"></i> Nouveau Ticket
             </a>
-            <a class="btn btn-success btn-lg" href="/tickets" role="button">
+            <a class="btn btn-success btn-lg" th:href="@{/tickets}" role="button">
                 <i class="fas fa-list"></i> Voir mes Tickets
             </a>
         </div>
@@ -34,7 +34,7 @@
                         <i class="fas fa-receipt fa-3x text-primary mb-3"></i>
                         <h5 class="card-title">Tickets</h5>
                         <p class="card-text">Gérez vos tickets de caisse par date ou magasin</p>
-                        <a href="/tickets" class="btn btn-outline-primary">Accéder</a>
+                        <a th:href="@{/tickets}" class="btn btn-outline-primary">Accéder</a>
                     </div>
                 </div>
             </div>
@@ -45,7 +45,7 @@
                         <i class="fas fa-chart-bar fa-3x text-success mb-3"></i>
                         <h5 class="card-title">Statistiques</h5>
                         <p class="card-text">Analysez les prix et trouvez les meilleures offres</p>
-                        <a href="/statistics/dashboard" class="btn btn-outline-success">Analyser</a>
+                        <a th:href="@{/statistics/dashboard}" class="btn btn-outline-success">Analyser</a>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                         <i class="fas fa-shopping-basket fa-3x text-warning mb-3"></i>
                         <h5 class="card-title">Consommation</h5>
                         <p class="card-text">Suivez votre consommation hebdomadaire de produits</p>
-                        <a href="/consumption/weekly" class="btn btn-outline-warning">Consulter</a>
+                        <a th:href="@{/consumption/weekly}" class="btn btn-outline-warning">Consulter</a>
                     </div>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                         <i class="fas fa-balance-scale fa-3x text-info mb-3"></i>
                         <h5 class="card-title">Comparaison</h5>
                         <p class="card-text">Comparez les prix entre différents magasins</p>
-                        <a href="/compare" class="btn btn-outline-info">Comparer</a>
+                        <a th:href="@{/compare}" class="btn btn-outline-info">Comparer</a>
                     </div>
                 </div>
             </div>
@@ -80,7 +80,7 @@
                         <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
                         <h5 class="card-title">Prédiction des Prix</h5>
                         <p class="card-text">Anticipez l'évolution des prix avec l'analyse de tendances</p>
-                        <a href="/analysis/forecast" class="btn btn-primary">Prédire</a>
+                        <a th:href="@{/analysis/forecast}" class="btn btn-primary">Prédire</a>
                     </div>
                 </div>
             </div>
@@ -91,7 +91,7 @@
                         <i class="fas fa-shopping-cart fa-3x text-success mb-3"></i>
                         <h5 class="card-title">Prédiction Consommation</h5>
                         <p class="card-text">Prédisez quand racheter vos produits selon vos habitudes</p>
-                        <a href="/analysis/consumption-forecast" class="btn btn-success">Analyser</a>
+                        <a th:href="@{/analysis/consumption-forecast}" class="btn btn-success">Analyser</a>
                     </div>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                         <i class="fas fa-list-check fa-3x text-info mb-3"></i>
                         <h5 class="card-title">Liste Intelligente</h5>
                         <p class="card-text">Génère une liste de courses basée sur vos besoins nutritionnels</p>
-                        <a href="/analysis/smart-shopping-list" class="btn btn-info">Générer</a>
+                        <a th:href="@{/analysis/smart-shopping-list}" class="btn btn-info">Générer</a>
                     </div>
                 </div>
             </div>
@@ -114,7 +114,7 @@
                     <div class="card-body">
                         <h3><i class="fas fa-rocket"></i> Commencer</h3>
                         <ol class="mb-0">
-                            <li>Créez votre premier ticket en cliquant sur <a href="/tickets/create" class="fw-bold">"Nouveau Ticket"</a></li>
+                            <li>Créez votre premier ticket en cliquant sur <a th:href="@{/tickets/create}" class="fw-bold">"Nouveau Ticket"</a></li>
                             <li>Ajoutez les produits de votre ticket avec leurs prix</li>
                             <li>Consultez les statistiques pour analyser vos dépenses</li>
                             <li>Comparez les prix entre différents magasins</li>
