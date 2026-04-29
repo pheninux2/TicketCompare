@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -11,16 +11,16 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">📊 TicketCompare</a>
+            <a class="navbar-brand" th:href="@{/}">📊 TicketCompare</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/tickets">Tickets</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/statistics/dashboard">Statistiques</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/consumption/weekly">Consommation</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/compare">Comparaison</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/tickets}">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link active" th:href="@{/statistics/dashboard}">Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/consumption/weekly}">Consommation</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/compare}">Comparaison</a></li>
                 </ul>
             </div>
         </div>
@@ -44,7 +44,7 @@
 
         <div class="row">
             <div class="col-md-3 mb-4">
-                <a href="/statistics/expensive" class="card text-decoration-none">
+                <a th:href="@{/statistics/expensive}" class="card text-decoration-none">
                     <div class="card-body">
                         <h5 class="card-title">💰 Produits les Plus Chers</h5>
                         <p class="card-text">Top 10 des produits les plus onéreux</p>
@@ -53,7 +53,7 @@
             </div>
 
             <div class="col-md-3 mb-4">
-                <a href="/statistics/cheap" class="card text-decoration-none">
+                <a th:href="@{/statistics/cheap}" class="card text-decoration-none">
                     <div class="card-body">
                         <h5 class="card-title">🏷️ Produits les Moins Chers</h5>
                         <p class="card-text">Top 10 des meilleures affaires</p>
@@ -62,7 +62,7 @@
             </div>
 
             <div class="col-md-3 mb-4">
-                <a href="/statistics/price-comparison" class="card text-decoration-none">
+                <a th:href="@{/statistics/price-comparison}" class="card text-decoration-none">
                     <div class="card-body">
                         <h5 class="card-title">📊 Comparaison Prix</h5>
                         <p class="card-text">Comparez les prix d'un produit</p>
@@ -71,7 +71,7 @@
             </div>
 
             <div class="col-md-3 mb-4">
-                <a href="/statistics/trends" class="card text-decoration-none">
+                <a th:href="@{/statistics/trends}" class="card text-decoration-none">
                     <div class="card-body">
                         <h5 class="card-title">📈 Tendances</h5>
                         <p class="card-text">Évolution des prix dans le temps</p>
